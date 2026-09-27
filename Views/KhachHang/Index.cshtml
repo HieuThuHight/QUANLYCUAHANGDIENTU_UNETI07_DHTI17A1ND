@@ -1,0 +1,62 @@
+@model IEnumerable<quanlycuahangdientu_uneti07_dhti17a1nd.Models.KhachHang>
+@{
+    ViewData["Title"] = "Quản lý khách hàng";
+}
+<h1>Quản lý khách hàng</h1>
+@if (TempData["ThongBao"] != null)
+{
+    <div class="alert alert-success">@TempData["ThongBao"]</div>
+}
+<form asp-action="Index" method="get" class="row g-2 mb-3">
+    <div class="col-auto">
+        <input type="text" name="tuKhoa" value="@ViewBag.TuKhoa" class="form-control"
+               placeholder="Tìm theo họ tên, số điện thoại, email..." />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+    </div>
+</form>
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Mã KH</th>
+            <th>Họ tên</th>
+            <th>Số điện thoại</th>
+            <th>Email</th>
+            <th>Tên đăng nhập</th>
+            <th>Ngày đăng ký</th>
+            <th>Trạng thái</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var kh in Model)
+        {
+            <tr>
+                <td>@kh.MaKhachHang</td>
+                <td>@kh.HoTen</td>
+                <td>@kh.SoDienThoai</td>
+                <td>@kh.Email</td>
+                <td>@kh.TaiKhoan?.TenDangNhap</td>
+                <td>@kh.NgayDangKy.ToString("dd/MM/yyyy")</td>
+                <td>
+                    @if (kh.TrangThai)
+                    {
+                        <span class="badge bg-success">Hoạt động</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Đã khóa</span>
+                    }
+                </td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@kh.MaKhachHang" class="btn btn-sm btn-info">Chi tiết</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+@if (!Model.Any())
+{
+    <p>Không tìm thấy khách hàng nào.</p>
+}

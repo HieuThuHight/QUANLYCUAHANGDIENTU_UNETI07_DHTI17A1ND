@@ -1,0 +1,34 @@
+@model quanlycuahangdientu_uneti07_dhti17a1nd.ViewModels.DatHangViewModel
+@{
+    ViewData["Title"] = "Đặt hàng";
+}
+<h1>Đặt hàng</h1>
+<div asp-validation-summary="All" class="text-danger"></div>
+<dl class="row">
+    <dt class="col-sm-3">Sản phẩm</dt>
+    <dd class="col-sm-9">@Model.TenSanPham</dd>
+    <dt class="col-sm-3">Đơn giá</dt>
+    <dd class="col-sm-9">@Model.DonGia.ToString("N0") đ</dd>
+    <dt class="col-sm-3">Số lượng tồn</dt>
+    <dd class="col-sm-9">@Model.SoLuongTon</dd>
+</dl>
+<form asp-action="DatHang" method="post">
+    <input type="hidden" asp-for="MaSanPham" />
+    <input type="hidden" asp-for="TenSanPham" />
+    <input type="hidden" asp-for="DonGia" />
+    <input type="hidden" asp-for="SoLuongTon" />
+    <div class="mb-3">
+        <label asp-for="SoLuong" class="form-label"></label>
+        <input asp-for="SoLuong" type="number" min="1" max="@Model.SoLuongTon" class="form-control" />
+        <span asp-validation-for="SoLuong" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="DiaChiGiaoHang" class="form-label"></label>
+        <textarea asp-for="DiaChiGiaoHang" class="form-control" rows="3"></textarea>
+        <span asp-validation-for="DiaChiGiaoHang" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Xác nhận đặt hàng</button>
+</form>
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

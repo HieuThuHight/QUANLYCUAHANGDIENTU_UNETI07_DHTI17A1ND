@@ -1,0 +1,58 @@
+@model IEnumerable<quanlycuahangdientu_uneti07_dhti17a1nd.Models.DonHang>
+@{
+    ViewData["Title"] = "Đơn hàng của tôi";
+    var cacTrangThai = new[] { "Chờ xác nhận", "Đã xác nhận", "Đang giao", "Đã hoàn thành", "Đã hủy" };
+    string? trangThaiHienTai = ViewBag.TrangThaiHienTai;
+}
+<h1>Đơn hàng của tôi</h1>
+@if (TempData["ThongBao"] != null)
+{
+    <div class="alert alert-success">@TempData["ThongBao"]</div>
+}
+@if (TempData["Loi"] != null)
+{
+    <div class="alert alert-danger">@TempData["Loi"]</div>
+}
+<ul class="nav nav-tabs mb-3">
+    <li class="nav-item">
+        <a class="nav-link @(string.IsNullOrEmpty(trangThaiHienTai) ? "active" : "")" asp-action="Index">Tất cả</a>
+    </li>
+    @foreach (var trangThai in cacTrangThai)
+    {
+        <li class="nav-item">
+            <a class="nav-link @(trangThaiHienTai == trangThai ? "active" : "")"
+               asp-action="Index" asp-route-trangThai="@trangThai">@trangThai</a>
+        </li>
+    }
+</ul>
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Mã đơn hàng</th>
+            <th>Ngày đặt</th>
+            <th>Địa chỉ giao hàng</th>
+            <th>Tổng tiền</th>
+            <th>Trạng thái</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var dh in Model)
+        {
+            <tr>
+                <td>@dh.MaDonHang</td>
+                <td>@dh.NgayDat.ToString("dd/MM/yyyy")</td>
+                <td>@dh.DiaChiGiaoHang</td>
+                <td>@dh.TongTien.ToString("N0") đ</td>
+                <td>@dh.TrangThai</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@dh.MaDonHang" class="btn btn-sm btn-info">Chi tiết</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+@if (!Model.Any())
+{
+    <p>Không có đơn hàng nào.</p>
+}

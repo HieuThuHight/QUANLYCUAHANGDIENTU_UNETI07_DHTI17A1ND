@@ -1,0 +1,78 @@
+@model quanlycuahangdientu_uneti07_dhti17a1nd.Models.KhachHang
+@{
+    ViewData["Title"] = "Chi tiết khách hàng";
+}
+<h1>Chi tiết khách hàng</h1>
+@if (TempData["ThongBao"] != null)
+{
+    <div class="alert alert-success">@TempData["ThongBao"]</div>
+}
+<dl class="row">
+    <dt class="col-sm-3">Mã khách hàng</dt>
+    <dd class="col-sm-9">@Model.MaKhachHang</dd>
+    <dt class="col-sm-3">Họ tên</dt>
+    <dd class="col-sm-9">@Model.HoTen</dd>
+    <dt class="col-sm-3">Ngày sinh</dt>
+    <dd class="col-sm-9">@(Model.NgaySinh?.ToString("dd/MM/yyyy") ?? "Chưa cập nhật")</dd>
+    <dt class="col-sm-3">Giới tính</dt>
+    <dd class="col-sm-9">@Model.GioiTinh</dd>
+    <dt class="col-sm-3">Số điện thoại</dt>
+    <dd class="col-sm-9">@Model.SoDienThoai</dd>
+    <dt class="col-sm-3">Email</dt>
+    <dd class="col-sm-9">@Model.Email</dd>
+    <dt class="col-sm-3">Địa chỉ</dt>
+    <dd class="col-sm-9">@Model.DiaChi</dd>
+    <dt class="col-sm-3">Tên đăng nhập</dt>
+    <dd class="col-sm-9">@Model.TaiKhoan?.TenDangNhap</dd>
+    <dt class="col-sm-3">Ngày đăng ký</dt>
+    <dd class="col-sm-9">@Model.NgayDangKy.ToString("dd/MM/yyyy")</dd>
+    <dt class="col-sm-3">Trạng thái</dt>
+    <dd class="col-sm-9">
+        @if (Model.TrangThai)
+        {
+            <span class="badge bg-success">Hoạt động</span>
+        }
+        else
+        {
+            <span class="badge bg-danger">Đã khóa</span>
+        }
+    </dd>
+</dl>
+<form asp-action="CapNhatTrangThai" asp-route-id="@Model.MaKhachHang" method="post" class="mb-4">
+    <input type="hidden" name="trangThai" value="@(!Model.TrangThai)" />
+    @if (Model.TrangThai)
+    {
+        <button type="submit" class="btn btn-danger">Khóa khách hàng</button>
+    }
+    else
+    {
+        <button type="submit" class="btn btn-success">Mở khóa khách hàng</button>
+    }
+</form>
+<h3>Lịch sử đơn hàng</h3>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Mã đơn hàng</th>
+            <th>Ngày đặt</th>
+            <th>Tổng tiền</th>
+            <th>Trạng thái</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var dh in Model.DonHangs.OrderByDescending(d => d.NgayDat))
+        {
+            <tr>
+                <td>@dh.MaDonHang</td>
+                <td>@dh.NgayDat.ToString("dd/MM/yyyy")</td>
+                <td>@dh.TongTien.ToString("N0") đ</td>
+                <td>@dh.TrangThai</td>
+            </tr>
+        }
+    </tbody>
+</table>
+@if (!Model.DonHangs.Any())
+{
+    <p>Khách hàng chưa có đơn hàng nào.</p>
+}
+<a asp-action="Index" class="btn btn-secondary">Quay lại danh sách</a>

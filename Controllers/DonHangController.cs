@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using quanlycuahangdientu_uneti07_dhti17a1nd.Helpers;
 using quanlycuahangdientu_uneti07_dhti17a1nd.Models;
+using quanlycuahangdientu_uneti07_dhti17a1nd.Data;
+using quanlycuahangdientu_uneti07_dhti17a1nd.Models.Entities;
 
 namespace quanlycuahangdientu_uneti07_dhti17a1nd.Controllers
 {

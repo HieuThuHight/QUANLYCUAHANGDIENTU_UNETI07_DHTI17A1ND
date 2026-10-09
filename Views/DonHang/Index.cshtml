@@ -1,0 +1,69 @@
+﻿@* Họ và tên: Pham Thai Hoang *@
+@* Mã sinh viên: 23203100039 *@
+@* Nội dung thực hiện: Trang danh sách đơn hàng (Admin) *@
+@model IEnumerable<quanlycuahangdientu_uneti07_dhti17a1nd.Models.DonHang>
+
+@{
+    ViewData["Title"] = "Quản lý đơn hàng";
+    var cacTrangThai = new[] { "Chờ xác nhận", "Đã xác nhận", "Đang giao", "Đã hoàn thành", "Đã hủy" };
+}
+
+<h2 class="mb-3">Quản lý đơn hàng</h2>
+
+<form method="get" asp-action="Index" class="row g-2 mb-3">
+    <div class="col-md-3">
+        <input type="text" name="tenKhachHang" value="@ViewBag.TenKhachHang" class="form-control" placeholder="Tên khách hàng" />
+    </div>
+    <div class="col-md-2">
+        <select name="trangThai" class="form-select">
+            <option value="">-- Tất cả trạng thái --</option>
+            @foreach (var tt in cacTrangThai)
+            {
+                <option value="@tt" selected="@(ViewBag.TrangThai == tt)">@tt</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-2">
+        <input type="date" name="tuNgay" value="@ViewBag.TuNgay" class="form-control" />
+    </div>
+    <div class="col-md-2">
+        <input type="date" name="denNgay" value="@ViewBag.DenNgay" class="form-control" />
+    </div>
+    <div class="col-md-3">
+        <button type="submit" class="btn btn-primary">Lọc</button>
+        <a asp-action="Index" class="btn btn-secondary">Xóa lọc</a>
+    </div>
+</form>
+
+<table class="table table-bordered table-hover">
+    <thead class="table-light">
+        <tr>
+            <th>Mã đơn</th>
+            <th>Khách hàng</th>
+            <th>Ngày đặt</th>
+            <th>Tổng tiền</th>
+            <th>Trạng thái</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var don in Model)
+        {
+            <tr>
+                <td>#@don.MaDonHang</td>
+                <td>@don.KhachHang.HoTen</td>
+                <td>@don.NgayDat.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>@don.TongTien.ToString("N0")</td>
+                <td>@don.TrangThai</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@don.MaDonHang" class="btn btn-sm btn-info">Chi tiết</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (!Model.Any())
+{
+    <p class="text-muted">Không có đơn hàng nào phù hợp.</p>
+}

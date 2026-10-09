@@ -1,8 +1,133 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model quanlycuahangdientu_uneti07_dhti17a1nd.Models.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container mt-4">
+    <h1 class="text-primary mb-4">📊 Dashboard - Quản Lý Cửa Hàng Điện Tử</h1>
+
+    <!-- Thẻ thống kê -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Loại sản phẩm</h5>
+                    <h2 class="mb-0">@Model.TongLoaiSanPham</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Sản phẩm</h5>
+                    <h2 class="mb-0">@Model.TongSanPham</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Khách hàng</h5>
+                    <h2 class="mb-0">@Model.TongKhachHang</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Đơn hàng</h5>
+                    <h2 class="mb-0">@Model.TongDonHang</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thống kê đơn hàng -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-secondary shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Chờ xác nhận</h6>
+                    <h4>@Model.DonChoXacNhan</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-info shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Đang giao</h6>
+                    <h4>@Model.DonDangGiao</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-success shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Đã hoàn thành</h6>
+                    <h4>@Model.DonHoanThanh</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-primary shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">SP đang kinh doanh</h6>
+                    <h4>@Model.SanPhamDangKinhDoanh</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Danh sách sản phẩm -->
+    <div class="card shadow">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">📦 Danh sách sản phẩm</h5>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-striped table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Mã</th>
+                        <th>Tên sản phẩm</th>
+                        <th>Loại</th>
+                        <th>Thương hiệu</th>
+                        <th>Xuất xứ</th>
+                        <th class="text-end">Đơn giá</th>
+                        <th class="text-center">Tồn</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var sp in Model.DanhSachSanPham)
+                    {
+                        <tr>
+                            <td>@sp.MaSanPham</td>
+                            <td><strong>@sp.TenSanPham</strong></td>
+                            <td>@sp.LoaiSanPham?.TenLoai</td>
+                            <td>@sp.ThuongHieu</td>
+                            <td>@sp.XuatXu</td>
+                            <td class="text-end">@sp.DonGia.ToString("N0") ₫</td>
+                            <td class="text-center">@sp.SoLuongTon</td>
+                            <td>
+                                @if (sp.TrangThai == "Đang kinh doanh")
+                                {
+                                    <span class="badge bg-success">@sp.TrangThai</span>
+                                }
+                                else if (sp.TrangThai == "Tạm ngừng")
+                                {
+                                    <span class="badge bg-warning text-dark">@sp.TrangThai</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">@sp.TrangThai</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <p class="text-muted mt-3">Tổng cộng: <strong>@Model.DanhSachSanPham.Count</strong> sản phẩm</p>
 </div>

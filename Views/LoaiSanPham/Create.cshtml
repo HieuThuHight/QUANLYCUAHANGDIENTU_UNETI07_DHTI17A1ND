@@ -1,0 +1,65 @@
+﻿@model quanlycuahangdientu_uneti07_dhti17a1nd.Models.Entities.LoaiSanPham
+@{
+    ViewData["Title"] = "Thêm loại sản phẩm";
+}
+
+<div class="container mt-4">
+    <h2>➕ Thêm loại sản phẩm mới</h2>
+    <hr />
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        @Html.AntiForgeryToken()
+
+                        @* Tên loại *@
+                        <div class="mb-3">
+                            <label asp-for="TenLoai" class="form-label fw-bold">
+                                Tên loại <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="TenLoai" class="form-control" placeholder="VD: Điện thoại, Laptop..." />
+                            <span asp-validation-for="TenLoai" class="text-danger"></span>
+                        </div>
+
+                        @* Mô tả - dùng textarea *@
+                        <div class="mb-3">
+                            <label asp-for="MoTa" class="form-label fw-bold">Mô tả</label>
+                            <textarea asp-for="MoTa" class="form-control" rows="4"
+                                      placeholder="Mô tả ngắn về loại sản phẩm..."></textarea>
+                            <span asp-validation-for="MoTa" class="text-danger"></span>
+                        </div>
+
+                        @* Trạng thái - dùng radio button *@
+                        <div class="mb-3">
+                            <label class="form-label fw-bold d-block">Trạng thái</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio"
+                                       asp-for="TrangThai" value="true" id="ttHoatDong" checked />
+                                <label class="form-check-label" for="ttHoatDong">
+                                    <span class="badge bg-success">Hoạt động</span>
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio"
+                                       asp-for="TrangThai" value="false" id="ttKhoa" />
+                                <label class="form-check-label" for="ttKhoa">
+                                    <span class="badge bg-secondary">Đã khóa</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <hr />
+                        <button type="submit" class="btn btn-primary">💾 Lưu</button>
+                        <a asp-action="Index" class="btn btn-secondary">← Quay lại</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

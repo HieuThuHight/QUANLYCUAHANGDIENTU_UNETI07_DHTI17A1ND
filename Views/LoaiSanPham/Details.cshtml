@@ -1,0 +1,78 @@
+﻿@model quanlycuahangdientu_uneti07_dhti17a1nd.Models.Entities.LoaiSanPham
+@{
+    ViewData["Title"] = "Chi tiết loại sản phẩm";
+    int soSanPham = ViewBag.SoSanPham ?? 0;
+}
+
+<div class="container mt-4">
+    <h2>🔍 Chi tiết loại sản phẩm</h2>
+    <hr />
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Thông tin loại sản phẩm</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered mb-0">
+                        <tr>
+                            <th style="width: 200px;">Mã loại</th>
+                            <td><strong>@Model.MaLoai</strong></td>
+                        </tr>
+                        <tr>
+                            <th>Tên loại</th>
+                            <td><strong class="text-primary fs-5">@Model.TenLoai</strong></td>
+                        </tr>
+                        <tr>
+                            <th>Mô tả</th>
+                            <td>
+                                @if (string.IsNullOrEmpty(Model.MoTa))
+                                {
+                                    <span class="text-muted fst-italic">(Chưa có mô tả)</span>
+                                }
+                                else
+                                {
+                                    @Model.MoTa
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Trạng thái</th>
+                            <td>
+                                @if (Model.TrangThai)
+                                {
+                                    <span class="badge bg-success fs-6">Hoạt động</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary fs-6">Đã khóa</span>
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Số sản phẩm liên quan</th>
+                            <td>
+                                @if (soSanPham > 0)
+                                {
+                                    <span class="badge bg-primary fs-6">@soSanPham sản phẩm</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Chưa có sản phẩm nào</span>
+                                }
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="card-footer">
+                    <a asp-action="Edit" asp-route-id="@Model.MaLoai"
+                       class="btn btn-warning">✏️ Sửa</a>
+                    <a asp-action="Delete" asp-route-id="@Model.MaLoai"
+                       class="btn btn-danger">🗑️ Xóa</a>
+                    <a asp-action="Index" class="btn btn-secondary">← Quay lại danh sách</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

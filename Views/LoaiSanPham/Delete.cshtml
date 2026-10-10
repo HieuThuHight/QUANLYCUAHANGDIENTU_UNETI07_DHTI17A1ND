@@ -1,0 +1,116 @@
+﻿@model quanlycuahangdientu_uneti07_dhti17a1nd.Models.Entities.LoaiSanPham
+@{
+    ViewData["Title"] = "Xóa loại sản phẩm";
+    bool coSanPham = ViewBag.CoSanPham ?? false;
+    var danhSachSanPham = ViewBag.DanhSachSanPham as IEnumerable<dynamic>
+                          ?? new List<dynamic>();
+}
+
+<div class="container mt-4">
+    <h2 class="text-danger">🗑️ Xác nhận xóa loại sản phẩm</h2>
+    <hr />
+
+    @if (coSanPham)
+    {
+        <div class="alert alert-warning">
+            ⚠️ <strong>Không thể xóa!</strong>
+            Loại sản phẩm này đang có <strong>@danhSachSanPham.Count()</strong> sản phẩm liên quan.
+            Vui lòng xử lý các sản phẩm đó trước khi xóa.
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-danger">
+            ❓ Bạn có chắc chắn muốn xóa loại sản phẩm này không? Hành động này không thể hoàn tác.
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">Thông tin loại sản phẩm sẽ xóa</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered mb-0">
+                        <tr>
+                            <th style="width: 200px;">Mã loại</th>
+                            <td><strong>@Model.MaLoai</strong></td>
+                        </tr>
+                        <tr>
+                            <th>Tên loại</th>
+                            <td><strong class="text-primary fs-5">@Model.TenLoai</strong></td>
+                        </tr>
+                        <tr>
+                            <th>Mô tả</th>
+                            <td>
+                                @if (string.IsNullOrEmpty(Model.MoTa))
+                                {
+                                    <span class="text-muted fst-italic">(Chưa có mô tả)</span>
+                                }
+                                else
+                                {
+                                    @Model.MoTa
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Trạng thái</th>
+                            <td>
+                                @if (Model.TrangThai)
+                                {
+                                    <span class="badge bg-success">Hoạt động</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Đã khóa</span>
+                                }
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            @if (coSanPham)
+            {
+                <div class="card shadow mt-3">
+                    <div class="card-header bg-warning text-dark">
+                        <h6 class="mb-0">📦 Danh sách @danhSachSanPham.Count() sản phẩm liên quan</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-sm mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 100px;">Mã SP</th>
+                                    <th>Tên sản phẩm</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var sp in danhSachSanPham)
+                                {
+                                    <tr>
+                                        <td>@sp.MaSanPham</td>
+                                        <td>@sp.TenSanPham</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+
+            <div class="mt-3">
+                <form asp-action="Delete" asp-route-id="@Model.MaLoai" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    @if (!coSanPham)
+                    {
+                        <button type="submit" class="btn btn-danger">
+                            🗑️ Xác nhận xóa
+                        </button>
+                    }
+                    <a asp-action="Index" class="btn btn-secondary">← Quay lại</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

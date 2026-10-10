@@ -1,0 +1,53 @@
+﻿@* Họ và tên: Pham Thai Hoang *@
+@* Mã sinh viên: 23203100039 *@
+@* Nội dung thực hiện: Trang Dashboard (Admin) *@
+@model quanlycuahangdientu_uneti07_dhti17a1nd.Models.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<h2 class="mb-4">Dashboard</h2>
+
+<div class="row g-3">
+    <div class="col-md-3">
+        <div class="card text-bg-primary"><div class="card-body">
+            <h6>Tổng loại sản phẩm</h6><h3>@Model.TongLoaiSanPham</h3>
+        </div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-bg-primary"><div class="card-body">
+            <h6>Tổng sản phẩm</h6><h3>@Model.TongSanPham</h3>
+        </div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-bg-primary"><div class="card-body">
+            <h6>Tổng khách hàng</h6><h3>@Model.TongKhachHang</h3>
+        </div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-bg-primary"><div class="card-body">
+            <h6>Tổng đơn hàng</h6><h3>@Model.TongDonHang</h3>
+        </div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-bg-warning"><div class="card-body">
+            <h6>Đơn chờ xác nhận</h6><h3>@Model.DonChoXacNhan</h3>
+        </div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-bg-info"><div class="card-body">
+            <h6>Đơn đang giao</h6><h3>@Model.DonDangGiao</h3>
+        </div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-bg-success"><div class="card-body">
+            <h6>Đơn đã hoàn thành</h6><h3>@Model.DonHoanThanh</h3>
+        </div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-bg-secondary"><div class="card-body">
+            <h6>Sản phẩm đang kinh doanh</h6><h3>@Model.SanPhamDangKinhDoanh</h3>
+        </div></div>
+    </div>
+</div>

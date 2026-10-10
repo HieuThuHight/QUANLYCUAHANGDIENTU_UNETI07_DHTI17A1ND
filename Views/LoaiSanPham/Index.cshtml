@@ -1,0 +1,112 @@
+﻿@model IEnumerable<quanlycuahangdientu_uneti07_dhti17a1nd.Models.Entities.LoaiSanPham>
+@{
+    ViewData["Title"] = "Danh sách loại sản phẩm";
+    var soSanPham = ViewBag.SoSanPham as Dictionary<int, int>
+                    ?? new Dictionary<int, int>();
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>📦 Danh sách loại sản phẩm</h2>
+        <a asp-action="Create" class="btn btn-success">+ Thêm loại mới</a>
+    </div>
+
+    @if (TempData["ThongBao"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            @TempData["ThongBao"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Loi"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            @TempData["Loi"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card shadow">
+        <div class="card-body p-0">
+            <table class="table table-striped table-hover mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="width: 80px;">Mã loại</th>
+                        <th>Tên loại</th>
+                        <th>Mô tả</th>
+                        <th style="width: 130px;" class="text-center">Trạng thái</th>
+                        <th style="width: 100px;" class="text-center">Số SP</th>
+                        <th style="width: 280px;" class="text-center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            var soLuong = soSanPham.ContainsKey(item.MaLoai) ? soSanPham[item.MaLoai] : 0;
+
+                            <tr>
+                                <td class="text-center">@item.MaLoai</td>
+                                <td><strong>@item.TenLoai</strong></td>
+                                <td>
+                                    @if (string.IsNullOrEmpty(item.MoTa))
+                                    {
+                                        <span class="text-muted fst-italic">(Chưa có mô tả)</span>
+                                    }
+                                    else
+                                    {
+                                        @item.MoTa
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (item.TrangThai)
+                                    {
+                                        <span class="badge bg-success">Hoạt động</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Đã khóa</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (soLuong > 0)
+                                    {
+                                        <span class="badge bg-primary">@soLuong SP</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">0</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <a asp-action="Details" asp-route-id="@item.MaLoai"
+                                       class="btn btn-sm btn-info">Chi tiết</a>
+                                    <a asp-action="Edit" asp-route-id="@item.MaLoai"
+                                       class="btn btn-sm btn-warning">Sửa</a>
+                                    <a asp-action="Delete" asp-route-id="@item.MaLoai"
+                                       class="btn btn-sm btn-danger">Xóa</a>
+                                    <form asp-action="CapNhatTrangThai" asp-route-id="@item.MaLoai"
+                                          method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                            @(item.TrangThai ? "Khóa" : "Mở")
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">
+                                Chưa có loại sản phẩm nào. Nhấn <strong>Thêm loại mới</strong> để bắt đầu.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

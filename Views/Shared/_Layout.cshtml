@@ -21,11 +21,54 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">🏠 Trang chủ</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
+
+                        @if (Context.Session.GetString("VaiTro") == "Admin")
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Home" asp-action="Dashboard">📊 Dashboard</a>
+                            </li>
+
+                            @* ===== MENU MODULE 1 ===== *@
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="LoaiSanPham" asp-action="Index">
+                                    📦 Loại sản phẩm
+                                </a>
+                            </li>
+
+                            @* ===== CÁC MENU MODULE KHÁC SẼ DO SV KHÁC THÊM VÀO ===== *@
+                            @* <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="SanPham" asp-action="Index">Sản phẩm</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="KhachHang" asp-action="Index">Khách hàng</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="DonHang" asp-action="Index">Đơn hàng</a>
+                            </li> *@
+                        }
+                    </ul>
+
+                    <ul class="navbar-nav">
+                        @if (Context.Session.GetInt32("MaTaiKhoan") != null)
+                        {
+                            <li class="nav-item">
+                                <span class="nav-link text-dark">
+                                    👤 @Context.Session.GetString("HoTen")
+                                    <span class="badge bg-secondary">@Context.Session.GetString("VaiTro")</span>
+                                </span>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-danger" asp-controller="TaiKhoan" asp-action="DangXuat">Đăng xuất</a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="TaiKhoan" asp-action="DangNhap">Đăng nhập</a>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>

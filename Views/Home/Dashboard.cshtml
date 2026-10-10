@@ -1,0 +1,77 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="container mt-4">
+    <h1 class="text-primary mb-4">📊 Dashboard quản trị</h1>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white shadow">
+                <div class="card-body">
+                    <h5>Loại sản phẩm</h5>
+                    <h2>@ViewBag.TongLoaiSanPham</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white shadow">
+                <div class="card-body">
+                    <h5>Sản phẩm</h5>
+                    <h2>@ViewBag.TongSanPham</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white shadow">
+                <div class="card-body">
+                    <h5>Khách hàng</h5>
+                    <h2>@ViewBag.TongKhachHang</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white shadow">
+                <div class="card-body">
+                    <h5>Đơn hàng</h5>
+                    <h2>@ViewBag.TongDonHang</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-3">
+            <div class="card border-secondary shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Chờ xác nhận</h6>
+                    <h4>@ViewBag.DonChoXacNhan</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-info shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Đang giao</h6>
+                    <h4>@ViewBag.DonDangGiao</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-success shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Đã hoàn thành</h6>
+                    <h4>@ViewBag.DonHoanThanh</h4>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-primary shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">SP đang kinh doanh</h6>
+                    <h4>@ViewBag.SanPhamDangKinhDoanh</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

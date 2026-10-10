@@ -1,0 +1,53 @@
+﻿@* Họ và tên: Pham Thai Hoang *@
+@* Mã sinh viên: 23203100039 *@
+@* Nội dung thực hiện: Trang thống kê (Admin) *@
+@using quanlycuahangdientu_uneti07_dhti17a1nd.Models
+@model ThongKeViewModel
+
+@{
+    ViewData["Title"] = "Thống kê";
+    var cacBang = new (string Tieu, string Cot, List<ThongKeItem> Dong)[]
+    {
+        ("Số sản phẩm theo từng loại", "Loại sản phẩm", Model.SanPhamTheoLoai),
+        ("Số đơn hàng theo từng trạng thái", "Trạng thái", Model.DonTheoTrangThai),
+        ("Số lượng bán theo từng sản phẩm (đơn đã hoàn thành)", "Sản phẩm", Model.SoLuongBanTheoSanPham),
+        ("Số đơn hàng theo từng khách hàng", "Khách hàng", Model.DonTheoKhachHang)
+    };
+}
+
+<h2 class="mb-4">Thống kê</h2>
+
+@foreach (var b in cacBang)
+{
+    <h5 class="mt-4">@b.Tieu</h5>
+    <table class="table table-bordered w-75">
+        <thead class="table-light"><tr><th>@b.Cot</th><th>Số lượng</th></tr></thead>
+        <tbody>
+            @foreach (var d in b.Dong)
+            {
+                <tr><td>@d.Ten</td><td>@d.SoLuong</td></tr>
+            }
+        </tbody>
+    </table>
+}
+
+<h5 class="mt-4">Sản phẩm bán nhiều nhất</h5>
+@if (Model.SanPhamBanChayNhat != null)
+{
+    <p><strong>@Model.SanPhamBanChayNhat.Ten</strong> (@Model.SanPhamBanChayNhat.SoLuong sản phẩm)</p>
+}
+else
+{
+    <p class="text-muted">Chưa có đơn hàng hoàn thành.</p>
+}
+
+<h5 class="mt-4">Doanh thu theo tháng (đơn đã hoàn thành)</h5>
+<table class="table table-bordered w-75">
+    <thead class="table-light"><tr><th>Tháng</th><th>Doanh thu</th></tr></thead>
+    <tbody>
+        @foreach (var t in Model.DoanhThuTheoThang)
+        {
+            <tr><td>@t.Thang/@t.Nam</td><td>@t.DoanhThu.ToString("N0")</td></tr>
+        }
+    </tbody>
+</table>

@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using quanlycuahangdientu_uneti07_dhti17a1nd.Models.Entities;
 
 namespace quanlycuahangdientu_uneti07_dhti17a1nd.Data
@@ -18,11 +18,21 @@ namespace quanlycuahangdientu_uneti07_dhti17a1nd.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Quan hệ 1-1: TaiKhoan ↔ KhachHang
+            // ===== QUAN HỆ 1-1: TaiKhoan ↔ KhachHang =====
             modelBuilder.Entity<KhachHang>()
                 .HasOne(k => k.TaiKhoan)
                 .WithOne(t => t.KhachHang)
                 .HasForeignKey<KhachHang>(k => k.MaTaiKhoan);
+
+            // ===== UNIQUE INDEX (khớp với ràng buộc trong SQL) =====
+            modelBuilder.Entity<TaiKhoan>()
+                .HasIndex(t => t.TenDangNhap).IsUnique();
+
+            modelBuilder.Entity<TaiKhoan>()
+                .HasIndex(t => t.Email).IsUnique();
+
+            modelBuilder.Entity<LoaiSanPham>()
+                .HasIndex(l => l.TenLoai).IsUnique();
         }
     }
 }

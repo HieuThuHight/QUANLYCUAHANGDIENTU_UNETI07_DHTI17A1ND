@@ -1,0 +1,67 @@
+﻿@model dynamic
+@{
+    int pageIndex = (int)Model.PageIndex;
+    int totalPages = (int)Model.TotalPages;
+    int totalItems = (int)Model.TotalItems;
+
+    string BuildUrl(int page)
+    {
+        var query = Context.Request.Query;
+        var dict = new Dictionary<string, string>();
+        foreach (var kv in query)
+        {
+            if (kv.Key != "PageIndex" && kv.Key != "page")
+                dict[kv.Key] = kv.Value.ToString();
+        }
+        dict["PageIndex"] = page.ToString();
+        var qs = string.Join("&", dict.Select(kv => $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}"));
+        return Context.Request.Path + "?" + qs;
+    }
+}
+
+@if (totalPages > 1)
+{
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(pageIndex <= 1 ? "disabled" : "")">
+                <a class="page-link" href="@BuildUrl(1)">« Đầu</a>
+            </li>
+            <li class="page-item @(pageIndex <= 1 ? "disabled" : "")">
+                <a class="page-link" href="@BuildUrl(pageIndex - 1)">Trước</a>
+            </li>
+            @{
+                int start = Math.Max(1, pageIndex - 2);
+                int end = Math.Min(totalPages, pageIndex + 2);
+            }
+            @if (start > 1)
+            {
+                <li class="page-item"><a class="page-link" href="@BuildUrl(1)">1</a></li>
+                @if (start > 2)
+                {
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                }
+            }
+            @for (int i = start; i <= end; i++)
+            {
+                <li class="page-item @(i == pageIndex ? "active" : "")">
+                    <a class="page-link" href="@BuildUrl(i)">@i</a>
+                </li>
+            }
+            @if (end < totalPages)
+            {
+                @if (end < totalPages - 1)
+                {
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                }
+                <li class="page-item"><a class="page-link" href="@BuildUrl(totalPages)">@totalPages</a></li>
+            }
+            <li class="page-item @(pageIndex >= totalPages ? "disabled" : "")">
+                <a class="page-link" href="@BuildUrl(pageIndex + 1)">Sau</a>
+            </li>
+            <li class="page-item @(pageIndex >= totalPages ? "disabled" : "")">
+                <a class="page-link" href="@BuildUrl(totalPages)">Cuối »</a>
+            </li>
+        </ul>
+        <p class="text-center text-muted small">Trang @pageIndex / @totalPages (Tổng @totalItems)</p>
+    </nav>
+}

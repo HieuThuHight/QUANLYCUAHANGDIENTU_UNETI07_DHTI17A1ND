@@ -1,0 +1,51 @@
+﻿@model QuanLyCuaHangDienTu.Models.Entities.LoaiSanPham
+@{ ViewData["Title"] = "Chi tiết loại sản phẩm"; Layout = "_AdminLayout"; }
+
+<h2>Chi tiết loại sản phẩm</h2>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Mã loại</dt><dd class="col-sm-9">@Model.MaLoai</dd>
+            <dt class="col-sm-3">Tên loại</dt><dd class="col-sm-9">@Model.TenLoai</dd>
+            <dt class="col-sm-3">Mô tả</dt><dd class="col-sm-9">@Model.MoTa</dd>
+            <dt class="col-sm-3">Trạng thái</dt>
+            <dd class="col-sm-9">
+                <span class="badge @(Model.TrangThai ? "bg-success" : "bg-secondary")">
+                    @(Model.TrangThai ? "Hoạt động" : "Khóa")
+                </span>
+            </dd>
+        </dl>
+    </div>
+</div>
+
+<h4>Sản phẩm thuộc loại này (@Model.SanPhams.Count)</h4>
+@if (Model.SanPhams.Any())
+{
+    <table class="table table-bordered">
+        <thead class="table-light">
+            <tr><th>Mã</th><th>Tên sản phẩm</th><th>Thương hiệu</th><th>Đơn giá</th><th>Tồn</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var sp in Model.SanPhams)
+            {
+                <tr>
+                    <td>@sp.MaSanPham</td>
+                    <td>@sp.TenSanPham</td>
+                    <td>@sp.ThuongHieu</td>
+                    <td>@sp.DonGia.ToString("N0") đ</td>
+                    <td>@sp.SoLuongTon</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="alert alert-info">Chưa có sản phẩm nào.</div>
+}
+
+<div class="mt-3">
+    <a asp-action="Edit" asp-route-id="@Model.MaLoai" class="btn btn-warning">Sửa</a>
+    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+</div>

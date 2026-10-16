@@ -25,7 +25,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Models\ViewModels\" />
 	  <Folder Include="Services\" />
 	  <Folder Include="Services\" />
 	  <Folder Include="Views\LoaiSanPham\" />
@@ -34,6 +33,16 @@
 	  <Folder Include="Views\GioHang\" />
 	  <Folder Include="Views\HoanHang\" />
 	  <Folder Include="Views\HoSo\" />
+	  <Folder Include="Views\DonHang\" />
+	  <Folder Include="Views\GioHang\" />
+	  <Folder Include="Views\HoanHang\" />
+	  <Folder Include="Views\HoSo\" />
+	  <Folder Include="Views\KhachHang\" />
+	  <Folder Include="Views\LoaiSanPham\" />
+	  <Folder Include="Views\Voucher\" />
+	  <Folder Include="Views\ThongKe\" />
+	  <Folder Include="Views\TaiKhoan\" />
+	  <Folder Include="Views\SanPham\" />
 	  <Folder Include="Views\ThongKe\" />
 	  <Folder Include="Views\Voucher\" />
 	  <Folder Include="Views\SanPham\" />

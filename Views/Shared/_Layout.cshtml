@@ -1,50 +1,137 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+﻿@using Microsoft.AspNetCore.Http
+@using QuanLyCuaHangDienTu.Helpers
+@{
+    var hoTen = Context.GetHoTen();
+    var vaiTro = Context.Session.GetString("VaiTro");
+    var maTaiKhoan = Context.Session.GetInt32("MaTaiKhoan");
+    var laKhach = vaiTro == "KhachHang";
+    var laAdmin = vaiTro == "Admin";
+    var daDangNhap = maTaiKhoan != null;
+
+    var cartJson = Context.Session.GetString("GIOHANG");
+    int cartCount = 0;
+    if (laKhach && !string.IsNullOrEmpty(cartJson))
+    {
+        try
+        {
+            var cart = System.Text.Json.JsonSerializer.Deserialize<List<QuanLyCuaHangDienTu.Models.ViewModels.CartItemViewModel>>(cartJson);
+            cartCount = cart?.Sum(c => c.SoLuong) ?? 0;
+        }
+        catch { }
+    }
+}
+<!DOCTYPE html>
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - QuanLyCuaHangDienTu</title>
-    <script type="importmap"></script>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/QuanLyCuaHangDienTu.styles.css" asp-append-version="true" />
+    <title>@ViewData["Title"] - UNETI Store</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="~/css/site.css" rel="stylesheet" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">QuanLyCuaHangDienTu</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
-
-    <footer class="border-top footer text-muted">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            &copy; 2026 - QuanLyCuaHangDienTu - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">
+                <i class="bi bi-shop"></i> UNETI Store
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav me-auto">
+                    @if (!laAdmin)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="SanPham" asp-action="Index">
+                                <i class="bi bi-grid"></i> Sản phẩm
+                            </a>
+                        </li>
+                    }
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    @if (daDangNhap)
+                    {
+                        @* ==== CHỈ KHÁCH MỚI THẤY GIỎ HÀNG ==== *@
+                        @if (laKhach)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link position-relative" asp-controller="GioHang" asp-action="Index">
+                                    <i class="bi bi-cart3"></i> Giỏ
+                                    <span id="cart-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                        @cartCount
+                                    </span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="DonHang" asp-action="Index">
+                                    <i class="bi bi-receipt"></i> Đơn hàng
+                                </a>
+                            </li>
+                        }
+
+                        @* ==== CHỈ ADMIN MỚI THẤY DASHBOARD ==== *@
+                        @if (laAdmin)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="ThongKe" asp-action="Index">
+                                    <i class="bi bi-speedometer2"></i> Dashboard
+                                </a>
+                            </li>
+                        }
+
+                        @* ==== MENU USER ==== *@
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle"></i> @hoTen
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                @if (laKhach)
+                                {
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="HoSo" asp-action="HoSo">
+                                            <i class="bi bi-person"></i> Thông tin cá nhân
+                                        </a>
+                                    </li>
+                                }
+                                <li><hr class="dropdown-divider" /></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" asp-controller="TaiKhoan" asp-action="DangXuat">
+                                        <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    }
+                    else
+                    {
+                        @* ==== CHƯA ĐĂNG NHẬP ==== *@
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="TaiKhoan" asp-action="DangNhap">
+                                <i class="bi bi-box-arrow-in-right"></i> Đăng nhập
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="TaiKhoan" asp-action="DangKy">
+                                <i class="bi bi-person-plus"></i> Đăng ký
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
         </div>
+    </nav>
+
+    <main class="container my-4">
+        <partial name="_ThongBao" />
+        @RenderBody()
+    </main>
+
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <p class="mb-0">© 2025 UNETI Store - Đồ án ASP.NET Core 10 MVC</p>
     </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

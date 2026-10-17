@@ -1,0 +1,70 @@
+﻿@using System.Text.Json
+@{ ViewData["Title"] = "Thống kê"; Layout = "_AdminLayout"; }
+
+<h2>Thống kê</h2>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <h5>Đơn hàng theo trạng thái</h5>
+        <canvas id="chartTrangThai"></canvas>
+    </div>
+    <div class="col-md-6 mb-4">
+        <h5>Top 10 sản phẩm bán chạy</h5>
+        <canvas id="chartBanChay"></canvas>
+    </div>
+    <div class="col-md-12 mb-4">
+        <h5>Doanh thu theo tháng</h5>
+        <canvas id="chartDoanhThu"></canvas>
+    </div>
+</div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    var trangThaiLabels = @Html.Raw(JsonSerializer.Serialize(
+        ((IEnumerable<dynamic>)ViewBag.DonHangTheoTrangThai).Select(x => (string)x.TrangThai).ToList()
+    ));
+    var trangThaiData = @Html.Raw(JsonSerializer.Serialize(
+        ((IEnumerable<dynamic>)ViewBag.DonHangTheoTrangThai).Select(x => (int)x.SoLuong).ToList()
+    ));
+
+    new Chart(document.getElementById('chartTrangThai'), {
+        type: 'pie',
+        data: {
+            labels: trangThaiLabels,
+            datasets: [{ data: trangThaiData,
+                backgroundColor: ['#ffc107','#17a2b8','#007bff','#28a745','#dc3545','#6c757d','#fd7e14'] }]
+        }
+    });
+
+    var banChayLabels = @Html.Raw(JsonSerializer.Serialize(
+        ((IEnumerable<dynamic>)ViewBag.SanPhamBanChay).Select(x => (string)x.TenSanPham).ToList()
+    ));
+    var banChayData = @Html.Raw(JsonSerializer.Serialize(
+        ((IEnumerable<dynamic>)ViewBag.SanPhamBanChay).Select(x => (int)x.TongBan).ToList()
+    ));
+
+    new Chart(document.getElementById('chartBanChay'), {
+        type: 'bar',
+        data: {
+            labels: banChayLabels,
+            datasets: [{ label: 'Số lượng bán', data: banChayData, backgroundColor: '#007bff' }]
+        }
+    });
+
+    var doanhThuLabels = @Html.Raw(JsonSerializer.Serialize(
+        ((IEnumerable<dynamic>)ViewBag.DoanhThuThang).Select(x => $"{x.Thang}/{x.Nam}").ToList()
+    ));
+    var doanhThuData = @Html.Raw(JsonSerializer.Serialize(
+        ((IEnumerable<dynamic>)ViewBag.DoanhThuThang).Select(x => (decimal)x.DoanhThu).ToList()
+    ));
+
+    new Chart(document.getElementById('chartDoanhThu'), {
+        type: 'line',
+        data: {
+            labels: doanhThuLabels,
+            datasets: [{ label: 'Doanh thu (VNĐ)', data: doanhThuData, borderColor: '#dc3545', tension: 0.3 }]
+        }
+    });
+</script>
+}

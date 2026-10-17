@@ -1,0 +1,74 @@
+﻿@model QuanLyCuaHangDienTu.Helpers.PaginatedList<QuanLyCuaHangDienTu.Models.Entities.DonHang>
+@{ ViewData["Title"] = "Quản lý đơn hàng"; Layout = "_AdminLayout"; }
+
+<h2>Quản lý đơn hàng</h2>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-3"><input name="keyword" value="@ViewBag.Keyword" class="form-control" placeholder="Tên khách hàng" /></div>
+    <div class="col-md-2">
+        <select name="trangThai" class="form-select">
+            <option value="">-- Trạng thái --</option>
+            <option value="ChoXacNhan" selected="@(ViewBag.TrangThai == "ChoXacNhan")">Chờ xác nhận</option>
+            <option value="DaXacNhan" selected="@(ViewBag.TrangThai == "DaXacNhan")">Đã xác nhận</option>
+            <option value="DangGiao" selected="@(ViewBag.TrangThai == "DangGiao")">Đang giao</option>
+            <option value="DaHoanThanh" selected="@(ViewBag.TrangThai == "DaHoanThanh")">Đã hoàn thành</option>
+            <option value="DaHuy" selected="@(ViewBag.TrangThai == "DaHuy")">Đã hủy</option>
+        </select>
+    </div>
+    <div class="col-md-2"><input name="tuNgay" value="@ViewBag.TuNgay" class="form-control" type="date" /></div>
+    <div class="col-md-2"><input name="denNgay" value="@ViewBag.DenNgay" class="form-control" type="date" /></div>
+    <div class="col-md-2"><button class="btn btn-primary w-100">Lọc</button></div>
+</form>
+
+<table class="table table-bordered table-hover">
+    <thead class="table-light">
+        <tr><th>Mã</th><th>Khách hàng</th><th>Ngày đặt</th><th>Tổng tiền</th><th>Trạng thái</th><th>Thao tác</th></tr>
+    </thead>
+    <tbody>
+        @foreach (var dh in Model)
+        {
+            <tr>
+                <td>#@dh.MaDonHang</td>
+                <td>@dh.KhachHang?.HoTen</td>
+                <td>@dh.NgayDat.ToString("dd/MM/yyyy")</td>
+                <td class="text-danger">@dh.TongTien.ToString("N0") đ</td>
+                <td><span class="badge bg-info">@dh.TrangThai</span></td>
+                <td>
+                    <a asp-action="ChiTietAdmin" asp-route-id="@dh.MaDonHang" class="btn btn-sm btn-info">Chi tiết</a>
+                    @if (dh.TrangThai == "ChoXacNhan")
+                    {
+                        <button class="btn btn-sm btn-success btn-tt" data-id="@dh.MaDonHang" data-tt="DaXacNhan">Xác nhận</button>
+                    }
+                    @if (dh.TrangThai == "DaXacNhan")
+                    {
+                        <button class="btn btn-sm btn-primary btn-tt" data-id="@dh.MaDonHang" data-tt="DangGiao">Giao hàng</button>
+                    }
+                    @if (dh.TrangThai == "DangGiao")
+                    {
+                        <button class="btn btn-sm btn-success btn-tt" data-id="@dh.MaDonHang" data-tt="DaHoanThanh">Hoàn thành</button>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<partial name="_Pagination" model="Model" />
+
+@section Scripts {
+<script>
+    document.querySelectorAll('.btn-tt').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            if (!confirm('Chuyển trạng thái?')) return;
+            const res = await fetch('/DonHang/ChuyenTrangThai', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `id=${btn.dataset.id}&trangThai=${btn.dataset.tt}`
+            });
+            const data = await res.json();
+            alert(data.message);
+            if (data.success) location.reload();
+        });
+    });
+</script>
+}

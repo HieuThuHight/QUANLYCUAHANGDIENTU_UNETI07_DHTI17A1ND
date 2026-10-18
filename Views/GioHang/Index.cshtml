@@ -1,0 +1,74 @@
+@model List<QuanLyCuaHangDienTu.Models.ViewModels.CartItemViewModel>
+@{ ViewData["Title"] = "Giỏ hàng"; Layout = "_Layout"; }
+
+<h2>Giỏ hàng của bạn</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">Giỏ hàng đang trống.</div>
+    <a asp-controller="SanPham" asp-action="Index" class="btn btn-primary">Mua sắm ngay</a>
+}
+else
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr><th>Hình ảnh</th><th>Sản phẩm</th><th>Đơn giá</th><th>Số lượng</th><th>Thành tiền</th><th></th></tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td><img src="@(item.HinhAnh ?? "/images/no-image.png")" style="width:60px;height:60px;object-fit:cover" /></td>
+                    <td>@item.TenSanPham</td>
+                    <td>@item.DonGia.ToString("N0") đ</td>
+                    <td>
+                        <input type="number" value="@item.SoLuong" min="1" class="form-control form-control-sm so-luong"
+                               style="width:80px" data-id="@item.MaSanPham" />
+                    </td>
+                    <td class="thanh-tien">@item.ThanhTien.ToString("N0") đ</td>
+                    <td><button class="btn btn-sm btn-danger btn-xoa" data-id="@item.MaSanPham">Xóa</button></td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <th colspan="4" class="text-end">Tổng cộng:</th>
+                <th colspan="2" class="text-danger">@ViewBag.TongTien.ToString("N0") đ</th>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="d-flex justify-content-between">
+        <a asp-controller="SanPham" asp-action="Index" class="btn btn-secondary">Tiếp tục mua</a>
+        <a asp-action="ThanhToan" class="btn btn-success">Thanh toán</a>
+    </div>
+}
+
+@section Scripts {
+<script>
+    document.querySelectorAll('.so-luong').forEach(inp => {
+        inp.addEventListener('change', async () => {
+            const res = await fetch('/GioHang/CapNhat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `maSanPham=${inp.dataset.id}&soLuong=${inp.value}`
+            });
+            const data = await res.json();
+            if (!data.success) { alert(data.message); }
+            location.reload();
+        });
+    });
+
+    document.querySelectorAll('.btn-xoa').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            if (!confirm('Xóa sản phẩm khỏi giỏ?')) return;
+            await fetch('/GioHang/Xoa', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `maSanPham=${btn.dataset.id}`
+            });
+            location.reload();
+        });
+    });
+</script>
+}

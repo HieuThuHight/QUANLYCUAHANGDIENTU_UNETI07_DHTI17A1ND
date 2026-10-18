@@ -1,0 +1,42 @@
+@model QuanLyCuaHangDienTu.Models.Entities.KhachHang
+@{ ViewData["Title"] = "Thông tin cá nhân"; Layout = "_Layout"; }
+
+<h2>Thông tin cá nhân</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="HoSo" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="mb-3">
+                <label asp-for="HoTen" class="form-label"></label>
+                <input asp-for="HoTen" class="form-control" />
+            </div>
+            <div class="mb-3">
+                <label asp-for="NgaySinh" class="form-label"></label>
+                <input asp-for="NgaySinh" class="form-control" type="date" />
+            </div>
+            <div class="mb-3">
+                <label asp-for="GioiTinh" class="form-label"></label>
+                <select asp-for="GioiTinh" class="form-select">
+                    <option value="Nam">Nam</option>
+                    <option value="Nữ">Nữ</option>
+                    <option value="Khác">Khác</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label asp-for="SoDienThoai" class="form-label"></label>
+                <input asp-for="SoDienThoai" class="form-control" />
+            </div>
+            <div class="mb-3">
+                <label asp-for="DiaChi" class="form-label"></label>
+                <input asp-for="DiaChi" class="form-control" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input value="@Model.Email" class="form-control" readonly />
+            </div>
+            <button type="submit" class="btn btn-primary">Cập nhật</button>
+        </form>
+    </div>
+</div>

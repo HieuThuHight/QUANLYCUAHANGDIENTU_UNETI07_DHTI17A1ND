@@ -1,0 +1,53 @@
+@model QuanLyCuaHangDienTu.Models.Entities.KhachHang
+@{ ViewData["Title"] = "Chi tiết khách hàng"; Layout = "_AdminLayout"; }
+
+<h2>Chi tiết khách hàng</h2>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Mã khách hàng</dt><dd class="col-sm-9">@Model.MaKhachHang</dd>
+            <dt class="col-sm-3">Tên đăng nhập</dt><dd class="col-sm-9">@Model.TaiKhoan?.TenDangNhap</dd>
+            <dt class="col-sm-3">Họ tên</dt><dd class="col-sm-9">@Model.HoTen</dd>
+            <dt class="col-sm-3">Ngày sinh</dt><dd class="col-sm-9">@Model.NgaySinh?.ToString("dd/MM/yyyy")</dd>
+            <dt class="col-sm-3">Giới tính</dt><dd class="col-sm-9">@Model.GioiTinh</dd>
+            <dt class="col-sm-3">Số điện thoại</dt><dd class="col-sm-9">@Model.SoDienThoai</dd>
+            <dt class="col-sm-3">Email</dt><dd class="col-sm-9">@Model.Email</dd>
+            <dt class="col-sm-3">Địa chỉ</dt><dd class="col-sm-9">@Model.DiaChi</dd>
+            <dt class="col-sm-3">Ngày đăng ký</dt><dd class="col-sm-9">@Model.NgayDangKy.ToString("dd/MM/yyyy")</dd>
+            <dt class="col-sm-3">Trạng thái</dt>
+            <dd class="col-sm-9">
+                <span class="badge @(Model.TrangThai ? "bg-success" : "bg-secondary")">
+                    @(Model.TrangThai ? "Hoạt động" : "Khóa")
+                </span>
+            </dd>
+        </dl>
+    </div>
+</div>
+
+<h4>Đơn hàng của khách hàng (@Model.DonHangs.Count)</h4>
+@if (Model.DonHangs.Any())
+{
+    <table class="table table-bordered">
+        <thead class="table-light">
+            <tr><th>Mã đơn</th><th>Ngày đặt</th><th>Tổng tiền</th><th>Trạng thái</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var dh in Model.DonHangs)
+            {
+                <tr>
+                    <td>#@dh.MaDonHang</td>
+                    <td>@dh.NgayDat.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@dh.TongTien.ToString("N0") đ</td>
+                    <td><span class="badge bg-info">@dh.TrangThai</span></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="alert alert-info">Khách hàng chưa có đơn hàng nào.</div>
+}
+
+<a asp-action="Index" class="btn btn-secondary mt-3">Quay lại</a>

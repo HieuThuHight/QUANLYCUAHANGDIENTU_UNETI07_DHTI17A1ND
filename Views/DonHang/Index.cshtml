@@ -1,0 +1,55 @@
+﻿@model List<QuanLyCuaHangDienTu.Models.Entities.DonHang>
+@{
+    ViewData["Title"] = "Đơn hàng của tôi"; Layout = "_Layout";
+}
+
+<h2>Đơn hàng của tôi</h2>
+
+<form class="mb-3" method="get">
+    <select name="trangThai" class="form-select w-auto d-inline" onchange="this.form.submit()">
+        <option value="">-- Tất cả --</option>
+        <option value="ChoXacNhan" selected="@(ViewBag.TrangThai == "ChoXacNhan")">Chờ xác nhận</option>
+        <option value="DaXacNhan" selected="@(ViewBag.TrangThai == "DaXacNhan")">Đã xác nhận</option>
+        <option value="DangGiao" selected="@(ViewBag.TrangThai == "DangGiao")">Đang giao</option>
+        <option value="DaHoanThanh" selected="@(ViewBag.TrangThai == "DaHoanThanh")">Đã hoàn thành</option>
+        <option value="DaHuy" selected="@(ViewBag.TrangThai == "DaHuy")">Đã hủy</option>
+    </select>
+</form>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">Bạn chưa có đơn hàng nào.</div>
+}
+else
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr><th>Mã đơn</th><th>Ngày đặt</th><th>Địa chỉ</th><th>Tổng tiền</th><th>Trạng thái</th><th></th></tr>
+        </thead>
+        <tbody>
+            @foreach (var dh in Model)
+            {
+                <tr>
+                    <td>#@dh.MaDonHang</td>
+                    <td>@dh.NgayDat.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@dh.DiaChiGiaoHang</td>
+                    <td class="text-danger">@dh.TongTien.ToString("N0") đ</td>
+                    <td>
+                        <span class="badge bg-@(dh.TrangThai switch
+                              {
+                                  "ChoXacNhan" => "warning",
+                                  "DaXacNhan" => "info",
+                                  "DangGiao" => "primary",
+                                  "DaHoanThanh" => "success",
+                                  "DaHuy" => "secondary",
+                                  "YeuCauHoanHang" => "warning",
+                                  "DaHoanHang" => "success",
+                                  _ => "secondary"
+                              })">@dh.TrangThai</span>
+                    </td>
+                    <td><a asp-action="Details" asp-route-id="@dh.MaDonHang" class="btn btn-sm btn-info">Chi tiết</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

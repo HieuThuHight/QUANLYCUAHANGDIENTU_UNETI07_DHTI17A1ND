@@ -1,0 +1,15 @@
+﻿@model QuanLyCuaHangDienTu.Models.ViewModels.DashboardViewModel
+@{ ViewData["Title"] = "Dashboard"; Layout = "_AdminLayout"; }
+
+<h2>Dashboard</h2>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3"><div class="card text-bg-primary"><div class="card-body"><h6>Tổng loại SP</h6><h2>@Model.TongLoaiSanPham</h2></div></div></div>
+    <div class="col-md-3"><div class="card text-bg-success"><div class="card-body"><h6>Tổng sản phẩm</h6><h2>@Model.TongSanPham</h2></div></div></div>
+    <div class="col-md-3"><div class="card text-bg-info"><div class="card-body"><h6>Khách hàng</h6><h2>@Model.TongKhachHang</h2></div></div></div>
+    <div class="col-md-3"><div class="card text-bg-warning"><div class="card-body"><h6>Tổng đơn hàng</h6><h2>@Model.TongDonHang</h2></div></div></div>
+    <div class="col-md-3"><div class="card"><div class="card-body"><h6>Chờ xác nhận</h6><h3 class="text-warning">@Model.DonChoXacNhan</h3></div></div></div>
+    <div class="col-md-3"><div class="card"><div class="card-body"><h6>Đang giao</h6><h3 class="text-info">@Model.DonDangGiao</h3></div></div></div>
+    <div class="col-md-3"><div class="card"><div class="card-body"><h6>Đã hoàn thành</h6><h3 class="text-success">@Model.DonHoanThanh</h3></div></div></div>
+    <div class="col-md-3"><div class="card"><div class="card-body"><h6>Doanh thu tháng</h6><h3 class="text-danger">@Model.DoanhThuThang.ToString("N0") đ</h3></div></div></div>
+</div>

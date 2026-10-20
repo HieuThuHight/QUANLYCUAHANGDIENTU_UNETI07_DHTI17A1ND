@@ -1,0 +1,49 @@
+﻿@model QuanLyCuaHangDienTu.Models.Entities.YeuCauHoanHang
+@{ ViewData["Title"] = "Chi tiết yêu cầu hoàn hàng"; Layout = "_AdminLayout"; }
+
+<h2>Chi tiết yêu cầu hoàn hàng #@Model.MaYeuCau</h2>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Mã đơn hàng</dt><dd class="col-sm-9">#@Model.MaDonHang</dd>
+            <dt class="col-sm-3">Khách hàng</dt><dd class="col-sm-9">@Model.DonHang?.KhachHang?.HoTen</dd>
+            <dt class="col-sm-3">Email</dt><dd class="col-sm-9">@Model.DonHang?.KhachHang?.Email</dd>
+            <dt class="col-sm-3">Lý do</dt><dd class="col-sm-9">@Model.LyDo</dd>
+            <dt class="col-sm-3">Ngày yêu cầu</dt><dd class="col-sm-9">@Model.NgayYeuCau.ToString("dd/MM/yyyy HH:mm")</dd>
+            <dt class="col-sm-3">Số tiền hoàn</dt><dd class="col-sm-9 text-danger"><b>@Model.SoTienHoan.ToString("N0") đ</b></dd>
+            <dt class="col-sm-3">Trạng thái</dt>
+            <dd class="col-sm-9">
+                <span class="badge bg-@(Model.TrangThai switch {
+                    "ChoDuyet" => "warning", "DaDuyet" => "info",
+                    "TuChoi" => "danger", "DaHoanTien" => "success",
+                    _ => "secondary" })">@Model.TrangThai</span>
+            </dd>
+            @if (!string.IsNullOrEmpty(Model.PhanHoiAdmin))
+            {
+                <dt class="col-sm-3">Phản hồi Admin</dt><dd class="col-sm-9">@Model.PhanHoiAdmin</dd>
+            }
+        </dl>
+    </div>
+</div>
+
+<h4>Chi tiết đơn hàng</h4>
+<table class="table table-bordered">
+    <thead><tr><th>Sản phẩm</th><th>Số lượng</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead>
+    <tbody>
+        @if (Model.DonHang?.ChiTietDonHangs != null)
+        {
+            @foreach (var ct in Model.DonHang.ChiTietDonHangs)
+            {
+                <tr>
+                    <td>@ct.SanPham?.TenSanPham</td>
+                    <td>@ct.SoLuong</td>
+                    <td>@ct.DonGia.ToString("N0") đ</td>
+                    <td>@ct.ThanhTien.ToString("N0") đ</td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+<a asp-action="QuanLy" class="btn btn-secondary mt-3">Quay lại</a>

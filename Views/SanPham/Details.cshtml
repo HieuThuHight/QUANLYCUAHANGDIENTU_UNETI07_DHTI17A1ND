@@ -1,0 +1,97 @@
+﻿@model QuanLyCuaHangDienTu.Models.Entities.SanPham
+@using QuanLyCuaHangDienTu.Helpers
+@{
+    ViewData["Title"] = "Chi tiết sản phẩm";
+    var laAdmin = Context.IsAdmin();
+    var laKhach = Context.IsKhachHang();
+    Layout = laAdmin ? "_AdminLayout" : "_Layout";
+}
+
+<h2>@Model.TenSanPham</h2>
+
+<div class="row">
+    <div class="col-md-5">
+        <img src="@(Model.HinhAnh ?? "/images/no-image.png")" class="img-fluid" style="max-height:400px;object-fit:cover" />
+    </div>
+    <div class="col-md-7">
+        <p><b>Thương hiệu:</b> @Model.ThuongHieu</p>
+        <p><b>Loại:</b> @Model.LoaiSanPham?.TenLoai</p>
+        <p><b>Xuất xứ:</b> @Model.XuatXu</p>
+        <p><b>Bảo hành:</b> @Model.ThoiGianBaoHanh tháng</p>
+        <p><b>Tồn kho:</b> @Model.SoLuongTon</p>
+        <p class="text-danger fs-4"><b>@Model.DonGia.ToString("N0") đ</b></p>
+        <p>@Model.MoTa</p>
+
+        @if (laAdmin)
+        {
+            <a asp-action="Edit" asp-route-id="@Model.MaSanPham" class="btn btn-warning"><i class="bi bi-pencil"></i> Sửa</a>
+            <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+        }
+        else if (laKhach)
+        {
+            @if (Model.TrangThai)
+            {
+                <button class="btn btn-success btn-add-cart" data-id="@Model.MaSanPham"><i class="bi bi-cart-plus"></i> Thêm vào giỏ</button>
+            }
+            else
+            {
+                <span class="badge bg-secondary">Ngừng kinh doanh</span>
+            }
+            <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+        }
+        else
+        {
+            @if (Model.TrangThai)
+            {
+                <a asp-controller="TaiKhoan" asp-action="DangNhap" asp-route-returnUrl="@Context.Request.Path" class="btn btn-success">
+                    <i class="bi bi-box-arrow-in-right"></i> Đăng nhập để mua
+                </a>
+            }
+            else
+            {
+                <span class="badge bg-secondary">Ngừng kinh doanh</span>
+            }
+            <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+        }
+    </div>
+</div>
+
+@if (ViewBag.SanPhamLienQuan != null)
+{
+    <h3 class="mt-5">Sản phẩm liên quan</h3>
+    <div class="row">
+        @foreach (var sp in (List<QuanLyCuaHangDienTu.Models.Entities.SanPham>)ViewBag.SanPhamLienQuan)
+        {
+            <div class="col-md-3 mb-3">
+                <div class="card">
+                    <img src="@(sp.HinhAnh ?? "/images/no-image.png")" class="card-img-top" style="height:150px;object-fit:cover" />
+                    <div class="card-body">
+                        <h6>@sp.TenSanPham</h6>
+                        <p class="text-danger small">@sp.DonGia.ToString("N0") đ</p>
+                        <a asp-action="Details" asp-route-id="@sp.MaSanPham" class="btn btn-sm btn-info w-100">Xem</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@section Scripts {
+<script>
+    document.querySelector('.btn-add-cart')?.addEventListener('click', async e => {
+        const res = await fetch('/GioHang/Them', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ maSanPham: parseInt(e.currentTarget.dataset.id), soLuong: 1 })
+        });
+        const data = await res.json();
+        if (data.success) {
+            alert('Đã thêm vào giỏ!');
+            const c = document.getElementById('cart-count');
+            if (c) c.innerText = data.totalItems;
+        } else {
+            alert(data.message);
+        }
+    });
+</script>
+}

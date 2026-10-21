@@ -1,6 +1,6 @@
 @model QuanLyCuaHangDienTu.Helpers.PaginatedList<QuanLyCuaHangDienTu.Models.Entities.KhachHang>
 @{ ViewData["Title"] = "Quản lý khách hàng"; Layout = "_AdminLayout"; }
-
+@Html.AntiForgeryToken()
 <h2>Quản lý khách hàng</h2>
 
 <form class="mb-3 d-flex" method="get">
@@ -26,10 +26,43 @@
                         @(kh.TrangThai ? "Hoạt động" : "Khóa")
                     </span>
                 </td>
-                <td><a asp-action="Details" asp-route-id="@kh.MaKhachHang" class="btn btn-sm btn-info">Xem</a></td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@kh.MaKhachHang" class="btn btn-sm btn-info">Xem</a>
+                    <button class="btn btn-sm @(kh.TrangThai ? "btn-danger" : "btn-success") btn-toggle" data-id="@kh.MaKhachHang">
+                        @(kh.TrangThai ? "Khóa" : "Mở khóa")
+                    </button>
+                </td>
             </tr>
         }
     </tbody>
 </table>
 
 <partial name="_Pagination" model="Model" />
+@section Scripts {
+<script>
+    document.querySelectorAll('.btn-toggle').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            if (!confirm('Bạn có chắc chắn muốn thay đổi trạng thái tài khoản này?')) return;
+            
+            // Lấy token bảo mật từ form ẩn hoặc trang
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            
+            // Gửi request
+            const res = await fetch('/KhachHang/ToggleTrangThai', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `id=${btn.dataset.id}&__RequestVerificationToken=${token}`
+            });
+            
+            const data = await res.json();
+            if (data.success) {
+                location.reload(); // Tải lại trang để thấy trạng thái mới
+            } else {
+                alert('Có lỗi xảy ra khi cập nhật trạng thái.');
+            }
+        });
+    });
+</script>
+}

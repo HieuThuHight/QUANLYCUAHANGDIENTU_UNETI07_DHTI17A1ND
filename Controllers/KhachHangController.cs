@@ -18,14 +18,14 @@ namespace QuanLyCuaHangDienTu.Controllers
         private readonly AppDbContext _context;
         public KhachHangController(AppDbContext context) => _context = context;
 
-        public async Task<IActionResult> Index(string? keyword, int page = 1)
+        public async Task<IActionResult> Index(string? keyword, int pageIndex = 1)
         {
             var query = _context.KhachHangs.Include(k => k.TaiKhoan).AsNoTracking().AsQueryable();
             if (!string.IsNullOrWhiteSpace(keyword))
                 query = query.Where(k => k.HoTen.Contains(keyword) || k.SoDienThoai.Contains(keyword));
 
             ViewBag.Keyword = keyword;
-            var list = await PaginatedList<KhachHang>.CreateAsync(query.OrderBy(k => k.HoTen), page, 10);
+            var list = await PaginatedList<KhachHang>.CreateAsync(query.OrderBy(k => k.HoTen), pageIndex, 10);
             return View(list);
         }
 

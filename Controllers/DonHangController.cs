@@ -64,7 +64,7 @@ namespace QuanLyCuaHangDienTu.Controllers
 
         // ===== ADMIN QUẢN LÝ =====
         [AdminAuthorize]
-        public async Task<IActionResult> QuanLy(string? keyword, string? trangThai, DateTime? tuNgay, DateTime? denNgay, int page = 1)
+        public async Task<IActionResult> QuanLy(string? keyword, string? trangThai, DateTime? tuNgay, DateTime? denNgay, int pageIndex = 1)
         {
             var query = _context.DonHangs.Include(d => d.KhachHang).Include(d => d.Voucher).AsNoTracking().AsQueryable();
 
@@ -82,7 +82,7 @@ namespace QuanLyCuaHangDienTu.Controllers
             ViewBag.TuNgay = tuNgay?.ToString("yyyy-MM-dd");
             ViewBag.DenNgay = denNgay?.ToString("yyyy-MM-dd");
 
-            var list = await PaginatedList<DonHang>.CreateAsync(query.OrderByDescending(d => d.NgayDat), page, 10);
+            var list = await PaginatedList<DonHang>.CreateAsync(query.OrderByDescending(d => d.NgayDat), pageIndex, 10);
             return View(list);
         }
 

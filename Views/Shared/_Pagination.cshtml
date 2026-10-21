@@ -10,7 +10,8 @@
         var dict = new Dictionary<string, string>();
         foreach (var kv in query)
         {
-            if (kv.Key != "PageIndex" && kv.Key != "page")
+            // Loại bỏ các tham số phân trang cũ để tránh bị nhân đôi trên URL
+            if (kv.Key.ToLower() != "pageindex" && kv.Key.ToLower() != "page")
                 dict[kv.Key] = kv.Value.ToString();
         }
         dict["PageIndex"] = page.ToString();

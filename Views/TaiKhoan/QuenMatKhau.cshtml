@@ -1,0 +1,36 @@
+﻿@model QuanLyCuaHangDienTu.Models.ViewModels.QuenMatKhauViewModel
+@{ ViewData["Title"] = "Quên mật khẩu"; Layout = "_Layout"; }
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark text-center">
+                    <h3><i class="bi bi-key"></i> Quên mật khẩu</h3>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Nhập email đã đăng ký, chúng tôi sẽ gửi link đặt lại mật khẩu.</p>
+                    <form asp-action="QuenMatKhau" method="post">
+                        @Html.AntiForgeryToken()
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label"></label>
+                            <input asp-for="Email" class="form-control" placeholder="email@example.com" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                        <button type="submit" class="btn btn-warning w-100">
+                            <i class="bi bi-send"></i> Gửi link đặt lại
+                        </button>
+                    </form>
+                </div>
+                <div class="card-footer text-center">
+                    <a asp-action="DangNhap">← Quay lại đăng nhập</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

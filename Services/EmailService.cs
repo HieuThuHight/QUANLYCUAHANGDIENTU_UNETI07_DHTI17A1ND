@@ -151,4 +151,24 @@ namespace QuanLyCuaHangDienTu.Services
             await GuiEmailAsync(to, "Đặt lại mật khẩu - UNETI Store", body);
         }
     }
-}
+            // ============== ĐẶT LẠI MẬT KHẨU ==============
+    public async Task GuiEmailDatLaiMatKhau(string to, string hoTen, string linkDatLai)
+        {
+            var body = $@"
+                <div style='font-family:Arial;max-width:600px;margin:auto;border:1px solid #ddd;border-radius:8px;overflow:hidden'>
+                    <div style='background:#dc3545;color:white;padding:20px;text-align:center'><h2>🔐 Đặt lại mật khẩu</h2></div>
+                    <div style='padding:20px'>
+                        <p>Xin chào <b>{hoTen}</b>,</p>
+                        <p>Bạn đã yêu cầu đặt lại mật khẩu tại <b>Cửa hàng điện tử UNETI</b>.</p>
+                        <p>Nhấn nút bên dưới để đặt lại (hết hạn sau 15 phút):</p>
+                        <div style='text-align:center;margin:25px 0'>
+                            <a href='{linkDatLai}' style='background:#dc3545;color:white;padding:12px 30px;text-decoration:none;border-radius:6px;font-size:16px'>Đặt lại mật khẩu</a>
+                        </div>
+                        <p style='color:#6c757d;font-size:13px'>Nếu bạn không yêu cầu, vui lòng bỏ qua email này.</p>
+                        <p>Trân trọng,<br><b>Cửa hàng điện tử UNETI</b></p>
+                    </div>
+                </div>";
+            await GuiEmailAsync(to, "Đặt lại mật khẩu - UNETI Store", body);
+        }
+
+    }

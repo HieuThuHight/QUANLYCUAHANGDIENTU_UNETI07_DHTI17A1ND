@@ -20,6 +20,7 @@ namespace QuanLyCuaHangDienTu.Data
         public DbSet<ChiTietDonHang> ChiTietDonHangs { get; set; }
         public DbSet<Voucher> Vouchers { get; set; }
         public DbSet<YeuCauHoanHang> YeuCauHoanHangs { get; set; }
+        public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -70,6 +71,11 @@ namespace QuanLyCuaHangDienTu.Data
             modelBuilder.Entity<YeuCauHoanHang>()
                 .HasOne(y => y.DonHang).WithMany(d => d.YeuCauHoanHangs)
                 .HasForeignKey(y => y.MaDonHang)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PasswordResetToken>()
+                .HasOne(p => p.TaiKhoan).WithMany()
+                .HasForeignKey(p => p.MaTaiKhoan)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

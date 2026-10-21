@@ -1,0 +1,31 @@
+﻿@{ ViewData["Title"] = "Yêu cầu hoàn hàng"; Layout = "_Layout"; }
+
+<h2>Yêu cầu hoàn hàng</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="alert alert-info">
+            <b>Mã đơn hàng:</b> #@ViewBag.MaDonHang<br />
+            <b>Số tiền hoàn dự kiến:</b> <span class="text-danger">@ViewBag.TongTien.ToString("N0") đ</span>
+        </div>
+
+        <form asp-action="YeuCau" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="MaDonHang" value="@ViewBag.MaDonHang" />
+
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="mb-3">
+                <label class="form-label">Lý do hoàn hàng <span class="text-danger">*</span></label>
+                <textarea name="LyDo" class="form-control" rows="4" required placeholder="Vui lòng mô tả lý do..."></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-warning">Gửi yêu cầu</button>
+            <a asp-controller="DonHang" asp-action="Index" class="btn btn-secondary">Hủy</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

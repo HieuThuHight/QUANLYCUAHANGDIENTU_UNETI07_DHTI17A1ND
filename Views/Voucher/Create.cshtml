@@ -1,0 +1,70 @@
+﻿@model QuanLyCuaHangDienTu.Models.Entities.Voucher
+@{ ViewData["Title"] = "Thêm voucher"; Layout = "_AdminLayout"; }
+
+<h2>Thêm voucher</h2>
+
+<div class="row">
+    <div class="col-md-8">
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="MaCode" class="form-label"></label>
+                    <input asp-for="MaCode" class="form-control" />
+                    <span asp-validation-for="MaCode" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="TenVoucher" class="form-label"></label>
+                    <input asp-for="TenVoucher" class="form-control" />
+                    <span asp-validation-for="TenVoucher" class="text-danger"></span>
+                </div>
+                <div class="col-md-12 mb-3">
+                    <label asp-for="MoTa" class="form-label"></label>
+                    <textarea asp-for="MoTa" class="form-control" rows="2"></textarea>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="LoaiGiamGia" class="form-label"></label>
+                    <select asp-for="LoaiGiamGia" class="form-select">
+                        <option value="PhanTram">Phần trăm</option>
+                        <option value="SoTien">Số tiền</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="GiaTriGiam" class="form-label"></label>
+                    <input asp-for="GiaTriGiam" class="form-control" type="number" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="GiamToiDa" class="form-label"></label>
+                    <input asp-for="GiamToiDa" class="form-control" type="number" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="DonHangToiThieu" class="form-label"></label>
+                    <input asp-for="DonHangToiThieu" class="form-control" type="number" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label asp-for="NgayBatDau" class="form-label"></label>
+                    <input asp-for="NgayBatDau" class="form-control" type="date" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label asp-for="NgayKetThuc" class="form-label"></label>
+                    <input asp-for="NgayKetThuc" class="form-control" type="date" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label asp-for="SoLuong" class="form-label"></label>
+                    <input asp-for="SoLuong" class="form-control" type="number" />
+                </div>
+                <div class="col-md-6 mb-3 form-check mt-4">
+                    <input asp-for="TrangThai" class="form-check-input" checked />
+                    <label asp-for="TrangThai" class="form-check-label"></label>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Lưu</button>
+            <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

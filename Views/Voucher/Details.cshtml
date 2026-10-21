@@ -1,0 +1,29 @@
+﻿@model QuanLyCuaHangDienTu.Models.Entities.Voucher
+@{ ViewData["Title"] = "Chi tiết voucher"; Layout = "_AdminLayout"; }
+
+<h2>Chi tiết voucher</h2>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Mã voucher</dt><dd class="col-sm-9"><b>@Model.MaCode</b></dd>
+            <dt class="col-sm-3">Tên voucher</dt><dd class="col-sm-9">@Model.TenVoucher</dd>
+            <dt class="col-sm-3">Mô tả</dt><dd class="col-sm-9">@Model.MoTa</dd>
+            <dt class="col-sm-3">Loại giảm giá</dt><dd class="col-sm-9">@Model.LoaiGiamGia</dd>
+            <dt class="col-sm-3">Giá trị giảm</dt>
+            <dd class="col-sm-9">@(Model.LoaiGiamGia == "PhanTram" ? $"{Model.GiaTriGiam}%" : $"{Model.GiaTriGiam:N0} đ")</dd>
+            <dt class="col-sm-3">Giảm tối đa</dt><dd class="col-sm-9">@(Model.GiamToiDa?.ToString("N0") ?? "-") đ</dd>
+            <dt class="col-sm-3">Đơn hàng tối thiểu</dt><dd class="col-sm-9">@Model.DonHangToiThieu.ToString("N0") đ</dd>
+            <dt class="col-sm-3">Hiệu lực</dt><dd class="col-sm-9">@Model.NgayBatDau.ToString("dd/MM/yyyy") - @Model.NgayKetThuc.ToString("dd/MM/yyyy")</dd>
+            <dt class="col-sm-3">Số lượng đã dùng</dt><dd class="col-sm-9">@Model.DaSuDung / @Model.SoLuong</dd>
+            <dt class="col-sm-3">Trạng thái</dt>
+            <dd class="col-sm-9">
+                <span class="badge @(Model.TrangThai ? "bg-success" : "bg-secondary")">
+                    @(Model.TrangThai ? "Hoạt động" : "Khóa")
+                </span>
+            </dd>
+        </dl>
+    </div>
+</div>
+
+<a asp-action="Index" class="btn btn-secondary mt-3">Quay lại</a>

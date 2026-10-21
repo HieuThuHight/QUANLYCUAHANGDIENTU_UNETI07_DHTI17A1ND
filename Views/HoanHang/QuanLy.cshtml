@@ -1,0 +1,68 @@
+﻿@model List<QuanLyCuaHangDienTu.Models.Entities.YeuCauHoanHang>
+@{ ViewData["Title"] = "Quản lý hoàn hàng"; Layout = "_AdminLayout"; }
+
+<h2>Quản lý yêu cầu hoàn hàng</h2>
+
+<form class="mb-3" method="get">
+    <select name="trangThai" class="form-select w-auto d-inline" onchange="this.form.submit()">
+        <option value="">-- Tất cả trạng thái --</option>
+        <option value="ChoDuyet" selected="@(ViewBag.TrangThai == "ChoDuyet")">Chờ duyệt</option>
+        <option value="DaDuyet" selected="@(ViewBag.TrangThai == "DaDuyet")">Đã duyệt</option>
+        <option value="TuChoi" selected="@(ViewBag.TrangThai == "TuChoi")">Từ chối</option>
+        <option value="DaHoanTien" selected="@(ViewBag.TrangThai == "DaHoanTien")">Đã hoàn tiền</option>
+    </select>
+</form>
+
+<table class="table table-bordered">
+    <thead class="table-light">
+        <tr>
+            <th>Mã YC</th><th>Mã đơn</th><th>Khách hàng</th><th>Lý do</th>
+            <th>Số tiền hoàn</th><th>Ngày YC</th><th>Trạng thái</th><th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var yc in Model)
+        {
+            <tr>
+                <td>@yc.MaYeuCau</td>
+                <td>#@yc.MaDonHang</td>
+                <td>@yc.DonHang?.KhachHang?.HoTen</td>
+                <td>@yc.LyDo</td>
+                <td class="text-danger">@yc.SoTienHoan.ToString("N0") đ</td>
+                <td>@yc.NgayYeuCau.ToString("dd/MM/yyyy")</td>
+                <td>
+                    <span class="badge bg-@(yc.TrangThai switch {
+                        "ChoDuyet" => "warning", "DaDuyet" => "info",
+                        "TuChoi" => "danger", "DaHoanTien" => "success",
+                        _ => "secondary" })">@yc.TrangThai</span>
+                </td>
+                <td>
+                    <a asp-action="ChiTiet" asp-route-id="@yc.MaYeuCau" class="btn btn-sm btn-info">Chi tiết</a>
+                    @if (yc.TrangThai == "ChoDuyet")
+                    {
+                        <button class="btn btn-sm btn-success btn-xuly" data-id="@yc.MaYeuCau" data-tt="DaHoanTien">Duyệt</button>
+                        <button class="btn btn-sm btn-danger btn-xuly" data-id="@yc.MaYeuCau" data-tt="TuChoi">Từ chối</button>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+<script>
+    document.querySelectorAll('.btn-xuly').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const phanHoi = prompt('Nhập phản hồi (có thể bỏ trống):') ?? '';
+            const res = await fetch('/HoanHang/XuLy', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `id=${btn.dataset.id}&trangThai=${btn.dataset.tt}&phanHoi=${encodeURIComponent(phanHoi)}`
+            });
+            const data = await res.json();
+            alert(data.message);
+            if (data.success) location.reload();
+        });
+    });
+</script>
+}

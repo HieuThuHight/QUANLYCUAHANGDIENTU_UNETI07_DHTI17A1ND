@@ -12,6 +12,7 @@ using QuanLyCuaHangDienTu.Services;
 
 namespace QuanLyCuaHangDienTu.Controllers
 {
+//xin chao
     public class TaiKhoanController : Controller
     {
         private readonly AppDbContext _context;

@@ -1,4 +1,4 @@
-﻿@model QuanLyCuaHangDienTu.Models.ViewModels.SanPhamFilterViewModel
+@model QuanLyCuaHangDienTu.Models.ViewModels.SanPhamFilterViewModel
 @using QuanLyCuaHangDienTu.Helpers
 @{
     ViewData["Title"] = "Danh sách sản phẩm";
@@ -8,131 +8,201 @@
     Layout = laAdmin ? "_AdminLayout" : "_Layout";
 }
 
-<h2 class="mb-3">Danh sách sản phẩm</h2>
-
-<form method="get" class="row g-2 mb-4 p-3 bg-light rounded">
-    <div class="col-md-3">
-        <input name="Keyword" value="@Model.Keyword" class="form-control" placeholder="Tên SP / Thương hiệu" />
-    </div>
-    <div class="col-md-2">
-        <select name="MaLoai" class="form-select" asp-items="ViewBag.LoaiSanPhams">
-            <option value="">-- Loại --</option>
-        </select>
-    </div>
-    <div class="col-md-2">
-        <select name="ThuongHieu" class="form-select">
-            <option value="">-- Thương hiệu --</option>
-            @foreach (var th in ViewBag.ThuongHieus as List<string>)
-            {
-                <option value="@th" selected="@(Model.ThuongHieu == th)">@th</option>
-            }
-        </select>
-    </div>
-    <div class="col-md-2">
-        <input name="GiaTu" value="@Model.GiaTu" class="form-control" placeholder="Giá từ" type="number" />
-    </div>
-    <div class="col-md-2">
-        <input name="GiaDen" value="@Model.GiaDen" class="form-control" placeholder="Giá đến" type="number" />
-    </div>
-    <div class="col-md-1">
-        <button class="btn btn-primary w-100">Lọc</button>
-    </div>
-    <div class="col-md-3">
-        <select name="SortOrder" class="form-select" onchange="this.form.submit()">
-            <option value="">-- Sắp xếp --</option>
-            <option value="ten_az" selected="@(Model.SortOrder == "ten_az")">Tên A → Z</option>
-            <option value="ten_za" selected="@(Model.SortOrder == "ten_za")">Tên Z → A</option>
-            <option value="gia_tang" selected="@(Model.SortOrder == "gia_tang")">Giá thấp → cao</option>
-            <option value="gia_giam" selected="@(Model.SortOrder == "gia_giam")">Giá cao → thấp</option>
-            <option value="ton_tang" selected="@(Model.SortOrder == "ton_tang")">Tồn tăng</option>
-            <option value="ton_giam" selected="@(Model.SortOrder == "ton_giam")">Tồn giảm</option>
-        </select>
-    </div>
-    <div class="col-md-2">
-        <select name="PageSize" class="form-select" onchange="this.form.submit()">
-            @foreach (var size in new[] { 6, 9, 12, 24 })
-            {
-                <option value="@size" selected="@(Model.PageSize == size)">@size / trang</option>
-            }
-        </select>
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h2 class="fw-bold mb-1"><i class="bi bi-grid-3x3-gap text-primary me-2"></i> Danh sách sản phẩm</h2>
+        <p class="text-muted small mb-0">Tìm kiếm và lọc các thiết bị công nghệ chính hãng</p>
     </div>
     @if (laAdmin)
     {
-        <div class="col-md-2 ms-auto">
-            <a asp-action="Create" class="btn btn-success w-100">+ Thêm SP</a>
+        <div>
+            <a asp-action="Create" class="btn btn-success shadow-sm">
+                <i class="bi bi-plus-circle me-1"></i> + Thêm sản phẩm mới
+            </a>
         </div>
     }
-</form>
+</div>
 
-<div class="row">
-@foreach (var sp in Model.SanPhams!)
-{
-    <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm">
-            <img src="@(sp.HinhAnh ?? "/images/no-image.png")" class="card-img-top" style="height:200px;object-fit:cover" />
-            <div class="card-body">
-                <h5 class="card-title">@sp.TenSanPham</h5>
-                <p class="text-muted small">@sp.ThuongHieu - @sp.LoaiSanPham?.TenLoai</p>
-                <p class="text-danger fw-bold">@sp.DonGia.ToString("N0") đ</p>
-                <p class="small">Tồn: @sp.SoLuongTon</p>
-            </div>
-            <div class="card-footer d-flex gap-2">
-                <a asp-action="Details" asp-route-id="@sp.MaSanPham" class="btn btn-sm btn-info flex-fill">Xem</a>
-
-                @if (laAdmin)
-                {
-                    <a asp-action="Edit" asp-route-id="@sp.MaSanPham" class="btn btn-sm btn-warning">Sửa</a>
-                    <button class="btn btn-sm btn-danger btn-del" data-id="@sp.MaSanPham">Xóa</button>
-                }
-                else if (laKhach)
-                {
-                    <button class="btn btn-sm btn-success flex-fill btn-add-cart" data-id="@sp.MaSanPham">
-                        <i class="bi bi-cart-plus"></i> Thêm giỏ
-                    </button>
-                }
-                else
-                {
-                    <a asp-controller="TaiKhoan" asp-action="DangNhap"
-                       asp-route-returnUrl="@Context.Request.Path"
-                       class="btn btn-sm btn-success flex-fill">
-                        <i class="bi bi-box-arrow-in-right"></i> Đăng nhập
-                    </a>
-                }
+<!-- Modern Filter Bar -->
+<div class="card p-4 mb-4 border-0 shadow-sm bg-white rounded-4">
+    <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label small fw-bold text-muted">Từ khóa</label>
+            <div class="input-group">
+                <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                <input name="Keyword" value="@Model.Keyword" class="form-control bg-light border-start-0" placeholder="Tên SP hoặc thương hiệu..." />
             </div>
         </div>
+        <div class="col-md-2">
+            <label class="form-label small fw-bold text-muted">Loại sản phẩm</label>
+            <select name="MaLoai" class="form-select bg-light" asp-items="ViewBag.LoaiSanPhams">
+                <option value="">-- Tất cả loại --</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label small fw-bold text-muted">Thương hiệu</label>
+            <select name="ThuongHieu" class="form-select bg-light">
+                <option value="">-- Tất cả hãng --</option>
+                @if (ViewBag.ThuongHieus is List<string> thList)
+                {
+                    foreach (var th in thList)
+                    {
+                        <option value="@th" selected="@(Model.ThuongHieu == th)">@th</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label small fw-bold text-muted">Khoảng giá (VNĐ)</label>
+            <div class="d-flex gap-2">
+                <input name="GiaTu" value="@Model.GiaTu" class="form-control bg-light" placeholder="Từ" type="number" />
+                <input name="GiaDen" value="@Model.GiaDen" class="form-control bg-light" placeholder="Đến" type="number" />
+            </div>
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-primary w-100 fw-bold">
+                <i class="bi bi-funnel-fill me-1"></i> Lọc
+            </button>
+        </div>
+
+        <div class="col-md-12 pt-2 border-top d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <span class="small text-muted fw-bold">Sắp xếp:</span>
+                <select name="SortOrder" class="form-select form-select-sm w-auto d-inline-block bg-light" onchange="this.form.submit()">
+                    <option value="">-- Mặc định (Mới nhất) --</option>
+                    <option value="ten_az" selected="@(Model.SortOrder == "ten_az")">Tên A → Z</option>
+                    <option value="ten_za" selected="@(Model.SortOrder == "ten_za")">Tên Z → A</option>
+                    <option value="gia_tang" selected="@(Model.SortOrder == "gia_tang")">Giá thấp → cao</option>
+                    <option value="gia_giam" selected="@(Model.SortOrder == "gia_giam")">Giá cao → thấp</option>
+                    <option value="ton_tang" selected="@(Model.SortOrder == "ton_tang")">Tồn kho tăng dần</option>
+                    <option value="ton_giam" selected="@(Model.SortOrder == "ton_giam")">Tồn kho giảm dần</option>
+                </select>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="small text-muted fw-bold">Hiển thị:</span>
+                <select name="PageSize" class="form-select form-select-sm w-auto d-inline-block bg-light" onchange="this.form.submit()">
+                    @foreach (var size in new[] { 6, 9, 12, 24 })
+                    {
+                        <option value="@size" selected="@(Model.PageSize == size)">@size sản phẩm/trang</option>
+                    }
+                </select>
+                <a asp-action="Index" class="btn btn-outline-secondary btn-sm ms-2">Đặt lại</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Product Cards Grid with GSAP Entrance -->
+<div class="row g-4 mb-4">
+@if (Model.SanPhams != null && Model.SanPhams.Any())
+{
+    @foreach (var sp in Model.SanPhams)
+    {
+        <div class="col-sm-6 col-lg-4 col-xl-3">
+            <div class="card product-card">
+                <div class="product-img-wrapper">
+                    <img src="@(string.IsNullOrEmpty(sp.HinhAnh) ? "/images/no-image.png" : sp.HinhAnh)" alt="@sp.TenSanPham" />
+                    <span class="badge-brand">@sp.ThuongHieu</span>
+                </div>
+                <div class="card-body d-flex flex-column p-3">
+                    <span class="text-primary small fw-semibold text-uppercase mb-1">@sp.LoaiSanPham?.TenLoai</span>
+                    <h6 class="fw-bold text-dark text-truncate mb-2" title="@sp.TenSanPham">@sp.TenSanPham</h6>
+                    
+                    <div class="mt-auto">
+                        <div class="d-flex justify-content-between align-items-baseline mb-2">
+                            <span class="text-danger fw-bold fs-5">@sp.DonGia.ToString("N0") đ</span>
+                            <span class="badge bg-light text-muted border">Kho: @sp.SoLuongTon</span>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <a asp-action="Details" asp-route-id="@sp.MaSanPham" class="btn btn-outline-primary btn-sm flex-fill">
+                                Chi tiết
+                            </a>
+
+                            @* ADMIN: Sửa + Xóa *@
+                            @if (laAdmin)
+                            {
+                                <a asp-action="Edit" asp-route-id="@sp.MaSanPham" class="btn btn-sm btn-outline-warning">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button class="btn btn-sm btn-outline-danger btn-del" data-id="@sp.MaSanPham">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            }
+                            @* KHÁCH HÀNG: Thêm giỏ hàng *@
+                            else if (laKhach)
+                            {
+                                <button class="btn btn-sm btn-success flex-fill btn-add-cart" data-id="@sp.MaSanPham">
+                                    <i class="bi bi-cart-plus me-1"></i> Thêm giỏ
+                                </button>
+                            }
+                            @* CHƯA ĐĂNG NHẬP *@
+                            else
+                            {
+                                <a asp-controller="TaiKhoan" asp-action="DangNhap"
+                                   asp-route-returnUrl="@Context.Request.Path"
+                                   class="btn btn-sm btn-outline-success flex-fill">
+                                    Đăng nhập
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+else
+{
+    <div class="col-12 text-center py-5">
+        <i class="bi bi-inbox display-3 text-muted"></i>
+        <h5 class="mt-3 text-muted">Không tìm thấy sản phẩm nào phù hợp với bộ lọc.</h5>
+        <a asp-action="Index" class="btn btn-primary btn-sm mt-2">Xem tất cả sản phẩm</a>
     </div>
 }
 </div>
 
+<!-- Pagination Partial -->
 <partial name="_Pagination" model="Model.SanPhams" />
 
 @section Scripts {
 <script>
-    document.querySelectorAll('.btn-add-cart').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            const res = await fetch('/GioHang/Them', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ maSanPham: parseInt(btn.dataset.id), soLuong: 1 })
-            });
-            const data = await res.json();
-            if (data.success) {
-                alert('Đã thêm vào giỏ!');
-                const c = document.getElementById('cart-count');
-                if (c) c.innerText = data.totalItems;
-            } else {
-                alert(data.message);
-            }
-        });
-    });
-
+    // Xóa sản phẩm qua AJAX
     document.querySelectorAll('.btn-del').forEach(btn => {
         btn.addEventListener('click', async () => {
-            if (!confirm('Xóa sản phẩm?')) return;
-            const res = await fetch('/SanPham/Delete/' + btn.dataset.id, { method: 'POST' });
+            if (!confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) return;
+            const res = await fetch('/SanPham/Delete/' + btn.dataset.id, { 
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                }
+            });
             const data = await res.json();
             alert(data.message);
             if (data.success) location.reload();
+        });
+    });
+
+    // Thêm giỏ hàng qua AJAX + GSAP Micro-interaction
+    document.querySelectorAll('.btn-add-cart').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            try {
+                const res = await fetch('/GioHang/Them', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ maSanPham: parseInt(btn.dataset.id), soLuong: 1 })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const c = document.getElementById('cart-count');
+                    if (c) c.innerText = data.totalItems;
+                    if (window.animateCartBadge) window.animateCartBadge();
+                } else {
+                    alert(data.message);
+                }
+            } catch (err) {
+                console.error(err);
+            }
         });
     });
 </script>

@@ -1,15 +1,135 @@
-﻿@model QuanLyCuaHangDienTu.Models.ViewModels.DashboardViewModel
-@{ ViewData["Title"] = "Dashboard"; Layout = "_AdminLayout"; }
+@model QuanLyCuaHangDienTu.Models.ViewModels.DashboardViewModel
+@{ 
+    ViewData["Title"] = "Dashboard Quản trị"; 
+    Layout = "_AdminLayout"; 
+}
 
-<h2>Dashboard</h2>
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h2 class="fw-bold mb-1"><i class="bi bi-speedometer2 text-primary me-2"></i> Tổng quan Dashboard</h2>
+        <p class="text-muted small mb-0">Cập nhật thống kê số liệu theo thời gian thực</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="ThongKe" class="btn btn-primary btn-sm">
+            <i class="bi bi-pie-chart-fill me-1"></i> Xem biểu đồ chi tiết
+        </a>
+    </div>
+</div>
 
-<div class="row g-3 mb-4">
-    <div class="col-md-3"><div class="card text-bg-primary"><div class="card-body"><h6>Tổng loại SP</h6><h2>@Model.TongLoaiSanPham</h2></div></div></div>
-    <div class="col-md-3"><div class="card text-bg-success"><div class="card-body"><h6>Tổng sản phẩm</h6><h2>@Model.TongSanPham</h2></div></div></div>
-    <div class="col-md-3"><div class="card text-bg-info"><div class="card-body"><h6>Khách hàng</h6><h2>@Model.TongKhachHang</h2></div></div></div>
-    <div class="col-md-3"><div class="card text-bg-warning"><div class="card-body"><h6>Tổng đơn hàng</h6><h2>@Model.TongDonHang</h2></div></div></div>
-    <div class="col-md-3"><div class="card"><div class="card-body"><h6>Chờ xác nhận</h6><h3 class="text-warning">@Model.DonChoXacNhan</h3></div></div></div>
-    <div class="col-md-3"><div class="card"><div class="card-body"><h6>Đang giao</h6><h3 class="text-info">@Model.DonDangGiao</h3></div></div></div>
-    <div class="col-md-3"><div class="card"><div class="card-body"><h6>Đã hoàn thành</h6><h3 class="text-success">@Model.DonHoanThanh</h3></div></div></div>
-    <div class="col-md-3"><div class="card"><div class="card-body"><h6>Doanh thu tháng</h6><h3 class="text-danger">@Model.DoanhThuThang.ToString("N0") đ</h3></div></div></div>
+<!-- Primary Stats Grid with GSAP Animated Counters -->
+<div class="row g-4 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card gradient-1">
+            <h6 class="text-uppercase fw-semibold mb-2" style="font-size: 0.8rem; opacity: 0.85;">Tổng loại sản phẩm</h6>
+            <h2 class="fw-bold mb-0 stat-count" data-count="@Model.TongLoaiSanPham">@Model.TongLoaiSanPham</h2>
+            <i class="bi bi-folder-fill stat-icon"></i>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card gradient-2">
+            <h6 class="text-uppercase fw-semibold mb-2" style="font-size: 0.8rem; opacity: 0.85;">Tổng sản phẩm</h6>
+            <h2 class="fw-bold mb-0 stat-count" data-count="@Model.TongSanPham">@Model.TongSanPham</h2>
+            <i class="bi bi-box-seam-fill stat-icon"></i>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card gradient-3">
+            <h6 class="text-uppercase fw-semibold mb-2" style="font-size: 0.8rem; opacity: 0.85;">Tổng khách hàng</h6>
+            <h2 class="fw-bold mb-0 stat-count" data-count="@Model.TongKhachHang">@Model.TongKhachHang</h2>
+            <i class="bi bi-people-fill stat-icon"></i>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card gradient-4">
+            <h6 class="text-uppercase fw-semibold mb-2" style="font-size: 0.8rem; opacity: 0.85;">Tổng đơn hàng</h6>
+            <h2 class="fw-bold mb-0 stat-count" data-count="@Model.TongDonHang">@Model.TongDonHang</h2>
+            <i class="bi bi-receipt stat-icon"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Secondary Detailed Stats -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card p-3 border-0 shadow-sm border-start border-warning border-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <small class="text-muted fw-bold text-uppercase">Chờ xác nhận</small>
+                    <h3 class="fw-bold text-warning mb-0 stat-count" data-count="@Model.DonChoXacNhan">@Model.DonChoXacNhan</h3>
+                </div>
+                <i class="bi bi-hourglass-split fs-2 text-warning opacity-50"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card p-3 border-0 shadow-sm border-start border-info border-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <small class="text-muted fw-bold text-uppercase">Đang giao hàng</small>
+                    <h3 class="fw-bold text-info mb-0 stat-count" data-count="@Model.DonDangGiao">@Model.DonDangGiao</h3>
+                </div>
+                <i class="bi bi-truck fs-2 text-info opacity-50"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card p-3 border-0 shadow-sm border-start border-success border-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <small class="text-muted fw-bold text-uppercase">Đã hoàn thành</small>
+                    <h3 class="fw-bold text-success mb-0 stat-count" data-count="@Model.DonHoanThanh">@Model.DonHoanThanh</h3>
+                </div>
+                <i class="bi bi-check2-circle fs-2 text-success opacity-50"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card p-3 border-0 shadow-sm border-start border-danger border-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <small class="text-muted fw-bold text-uppercase">Doanh thu tháng này</small>
+                    <h4 class="fw-bold text-danger mb-0 stat-count" data-count="@Model.DoanhThuThang" data-is-currency="true">
+                        @Model.DoanhThuThang.ToString("N0") đ
+                    </h4>
+                </div>
+                <i class="bi bi-cash-stack fs-2 text-danger opacity-50"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Links & Actions -->
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card p-4 border-0 shadow-sm">
+            <h5 class="fw-bold mb-3"><i class="bi bi-lightning-charge-fill text-warning me-2"></i> Lối tắt quản lý</h5>
+            <div class="d-flex gap-2 flex-wrap">
+                <a asp-controller="DonHang" asp-action="QuanLy" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-receipt"></i> Xử lý đơn hàng
+                </a>
+                <a asp-controller="SanPham" asp-action="Create" class="btn btn-outline-success btn-sm">
+                    <i class="bi bi-plus-circle"></i> Thêm sản phẩm mới
+                </a>
+                <a asp-controller="Voucher" asp-action="Create" class="btn btn-outline-warning btn-sm">
+                    <i class="bi bi-ticket-perforated"></i> Tạo voucher ưu đãi
+                </a>
+                <a asp-controller="HoanHang" asp-action="QuanLy" class="btn btn-outline-danger btn-sm">
+                    <i class="bi bi-arrow-return-left"></i> Duyệt hoàn hàng
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card p-4 border-0 shadow-sm">
+            <h5 class="fw-bold mb-3"><i class="bi bi-info-circle-fill text-primary me-2"></i> Trạng thái hệ thống</h5>
+            <div class="d-flex justify-content-between py-2 border-bottom">
+                <span class="text-muted">Sản phẩm đang kinh doanh:</span>
+                <span class="fw-bold text-success">@Model.SanPhamDangKinhDoanh sản phẩm</span>
+            </div>
+            <div class="d-flex justify-content-between py-2">
+                <span class="text-muted">Cơ sở dữ liệu:</span>
+                <span class="fw-bold text-primary">SQL Server (LocalDB) • EF Core 10</span>
+            </div>
+        </div>
+    </div>
 </div>

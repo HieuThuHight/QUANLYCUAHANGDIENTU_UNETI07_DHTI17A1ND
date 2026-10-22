@@ -1,4 +1,4 @@
-﻿@using Microsoft.AspNetCore.Http
+@using Microsoft.AspNetCore.Http
 @using QuanLyCuaHangDienTu.Helpers
 @{
     var hoTen = Context.GetHoTen();
@@ -24,80 +24,88 @@
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - UNETI Store</title>
+    <!-- Bootstrap 5 & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+    <!-- Modern Store Styles -->
     <link href="~/css/site.css" rel="stylesheet" />
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <!-- Modern Sticky Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
         <div class="container">
-            <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">
-                <i class="bi bi-shop"></i> UNETI Store
+            <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                <i class="bi bi-cpu-fill text-primary"></i> UNETI Store
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarMain">
-                <ul class="navbar-nav me-auto">
+                <ul class="navbar-nav me-auto ms-lg-3">
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Home" asp-action="Index">
+                            <i class="bi bi-house"></i> Trang chủ
+                        </a>
+                    </li>
                     @if (!laAdmin)
                     {
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="SanPham" asp-action="Index">
-                                <i class="bi bi-grid"></i> Sản phẩm
+                                <i class="bi bi-grid-3x3-gap"></i> Sản phẩm
                             </a>
                         </li>
                     }
                 </ul>
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav ms-auto align-items-lg-center">
                     @if (daDangNhap)
                     {
-                        @* ==== CHỈ KHÁCH MỚI THẤY GIỎ HÀNG ==== *@
                         @if (laKhach)
                         {
-                            <li class="nav-item">
-                                <a class="nav-link position-relative" asp-controller="GioHang" asp-action="Index">
-                                    <i class="bi bi-cart3"></i> Giỏ
-                                    <span id="cart-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            <li class="nav-item me-lg-2">
+                                <a class="nav-link position-relative" asp-controller="GioHang" asp-action="Index" id="cart-nav-link">
+                                    <i class="bi bi-bag-fill fs-5"></i> Giỏ hàng
+                                    <span id="cart-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-badge">
                                         @cartCount
                                     </span>
                                 </a>
                             </li>
-                            <li class="nav-item">
+                            <li class="nav-item me-lg-2">
                                 <a class="nav-link" asp-controller="DonHang" asp-action="Index">
-                                    <i class="bi bi-receipt"></i> Đơn hàng
+                                    <i class="bi bi-receipt-cutoff"></i> Đơn mua
                                 </a>
                             </li>
                         }
 
-                        @* ==== CHỈ ADMIN MỚI THẤY DASHBOARD ==== *@
                         @if (laAdmin)
                         {
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="ThongKe" asp-action="Index">
-                                    <i class="bi bi-speedometer2"></i> Dashboard
+                            <li class="nav-item me-lg-2">
+                                <a class="nav-link btn btn-sm btn-outline-warning text-warning px-3" asp-controller="ThongKe" asp-action="Index">
+                                    <i class="bi bi-speedometer2"></i> Quản trị Admin
                                 </a>
                             </li>
                         }
 
-                        @* ==== MENU USER ==== *@
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                                <i class="bi bi-person-circle"></i> @hoTen
+                        <!-- User Profile Menu -->
+                        <li class="nav-item dropdown ms-lg-2">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle fs-5 text-primary"></i>
+                                <span>@hoTen</span>
                             </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
+                            <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 mt-2">
                                 @if (laKhach)
                                 {
                                     <li>
-                                        <a class="dropdown-item" asp-controller="HoSo" asp-action="HoSo">
-                                            <i class="bi bi-person"></i> Thông tin cá nhân
+                                        <a class="dropdown-item py-2" asp-controller="HoSo" asp-action="HoSo">
+                                            <i class="bi bi-person me-2 text-primary"></i> Thông tin cá nhân
                                         </a>
                                     </li>
                                 }
                                 <li><hr class="dropdown-divider" /></li>
                                 <li>
-                                    <a class="dropdown-item text-danger" asp-controller="TaiKhoan" asp-action="DangXuat">
-                                        <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                                    <a class="dropdown-item text-danger py-2" asp-controller="TaiKhoan" asp-action="DangXuat">
+                                        <i class="bi bi-box-arrow-right me-2"></i> Đăng xuất
                                     </a>
                                 </li>
                             </ul>
@@ -105,15 +113,14 @@
                     }
                     else
                     {
-                        @* ==== CHƯA ĐĂNG NHẬP ==== *@
-                        <li class="nav-item">
+                        <li class="nav-item me-2">
                             <a class="nav-link" asp-controller="TaiKhoan" asp-action="DangNhap">
                                 <i class="bi bi-box-arrow-in-right"></i> Đăng nhập
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="TaiKhoan" asp-action="DangKy">
-                                <i class="bi bi-person-plus"></i> Đăng ký
+                            <a class="btn btn-primary btn-sm px-3" asp-controller="TaiKhoan" asp-action="DangKy">
+                                <i class="bi bi-person-plus-fill me-1"></i> Đăng ký
                             </a>
                         </li>
                     }
@@ -122,16 +129,36 @@
         </div>
     </nav>
 
+    <!-- Main Body Container -->
     <main class="container my-4">
         <partial name="_ThongBao" />
         @RenderBody()
     </main>
 
-    <footer class="bg-dark text-white text-center py-3 mt-5">
-        <p class="mb-0">© 2025 UNETI Store - Đồ án ASP.NET Core 10 MVC</p>
+    <!-- Modern Dark Footer -->
+    <footer class="footer-custom">
+        <div class="container text-center">
+            <div class="row gy-3 align-items-center">
+                <div class="col-md-6 text-md-start">
+                    <span class="fw-bold text-white fs-5"><i class="bi bi-cpu-fill text-primary"></i> UNETI Store</span>
+                    <p class="small text-muted mb-0 mt-1">Hệ thống phân phối thiết bị công nghệ & điện tử chính hãng</p>
+                </div>
+                <div class="col-md-6 text-md-end text-muted small">
+                    <p class="mb-0">Đồ án thực hành lập trình .NET • Nhóm 07 • Lớp DHTI17A1ND</p>
+                    <p class="mb-0">ASP.NET Core 10 MVC • Entity Framework Core 10</p>
+                </div>
+            </div>
+        </div>
     </footer>
 
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- GSAP 3.12.5 Core & ScrollTrigger from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <!-- GSAP Global Animations -->
+    <script src="~/js/gsap-animations.js"></script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

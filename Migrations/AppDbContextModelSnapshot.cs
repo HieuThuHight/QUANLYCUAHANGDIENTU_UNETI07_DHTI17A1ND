@@ -179,6 +179,38 @@ namespace QuanLyCuaHangDienTu.Migrations
                     b.ToTable("LoaiSanPham");
                 });
 
+            modelBuilder.Entity("QuanLyCuaHangDienTu.Models.Entities.PasswordResetToken", b =>
+                {
+                    b.Property<int>("MaToken")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaToken"));
+
+                    b.Property<bool>("DaSuDung")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MaTaiKhoan")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("NgayHetHan")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("NgayTao")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("MaToken");
+
+                    b.HasIndex("MaTaiKhoan");
+
+                    b.ToTable("PasswordResetToken");
+                });
+
             modelBuilder.Entity("QuanLyCuaHangDienTu.Models.Entities.SanPham", b =>
                 {
                     b.Property<int>("MaSanPham")
@@ -417,6 +449,17 @@ namespace QuanLyCuaHangDienTu.Migrations
                         .WithOne("KhachHang")
                         .HasForeignKey("QuanLyCuaHangDienTu.Models.Entities.KhachHang", "MaTaiKhoan")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("TaiKhoan");
+                });
+
+            modelBuilder.Entity("QuanLyCuaHangDienTu.Models.Entities.PasswordResetToken", b =>
+                {
+                    b.HasOne("QuanLyCuaHangDienTu.Models.Entities.TaiKhoan", "TaiKhoan")
+                        .WithMany()
+                        .HasForeignKey("MaTaiKhoan")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("TaiKhoan");

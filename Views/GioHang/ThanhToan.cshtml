@@ -1,64 +1,113 @@
 @model QuanLyCuaHangDienTu.Models.ViewModels.CheckoutViewModel
-@{ ViewData["Title"] = "Thanh toán"; Layout = "_Layout"; }
+@{ 
+    ViewData["Title"] = "Thanh toán đơn hàng"; 
+    Layout = "_Layout"; 
+}
 
-<h2>Thanh toán đơn hàng</h2>
+<div class="mb-4">
+    <h2 class="fw-bold mb-1"><i class="bi bi-credit-card-2-front-fill text-primary me-2"></i> Thanh toán đơn hàng</h2>
+    <p class="text-muted small mb-0">Xác nhận thông tin giao hàng và áp dụng mã giảm giá ưu đãi</p>
+</div>
 
-<div class="row">
-    <div class="col-md-7">
-        <table class="table">
-            <thead>
-                <tr><th>Sản phẩm</th><th>SL</th><th>Đơn giá</th><th>Thành tiền</th></tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model.Items)
-                {
-                    <tr>
-                        <td>@item.TenSanPham</td>
-                        <td>@item.SoLuong</td>
-                        <td>@item.DonGia.ToString("N0") đ</td>
-                        <td>@item.ThanhTien.ToString("N0") đ</td>
-                    </tr>
-                }
-            </tbody>
-            <tfoot>
-                <tr>
-                    <th colspan="3" class="text-end">Tổng cộng:</th>
-                    <th id="tongTien">@Model.TongTien.ToString("N0") đ</th>
-                </tr>
-                <tr>
-                    <th colspan="3" class="text-end">Giảm giá:</th>
-                    <th id="giamGia" class="text-success">0 đ</th>
-                </tr>
-                <tr>
-                    <th colspan="3" class="text-end">Thanh toán:</th>
-                    <th id="thanhToan" class="text-danger">@Model.TongTien.ToString("N0") đ</th>
-                </tr>
-            </tfoot>
-        </table>
-    </div>
-    <div class="col-md-5">
-        <form asp-action="DatHang" method="post">
-            @Html.AntiForgeryToken()
-            <div asp-validation-summary="All" class="text-danger"></div>
-            <div class="mb-3">
-                <label asp-for="DiaChiGiaoHang" class="form-label"></label>
-                <input asp-for="DiaChiGiaoHang" class="form-control" />
-                <span asp-validation-for="DiaChiGiaoHang" class="text-danger"></span>
+<div class="row g-4">
+    <!-- Order Items List -->
+    <div class="col-lg-7">
+        <div class="card p-4 border-0 shadow-sm rounded-4 bg-white mb-4">
+            <h5 class="fw-bold mb-3 border-bottom pb-2">Danh sách sản phẩm (@Model.Items.Count)</h5>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Sản phẩm</th>
+                            <th class="text-center">Số lượng</th>
+                            <th class="text-end">Đơn giá</th>
+                            <th class="text-end">Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="fw-bold text-dark">@item.TenSanPham</div>
+                                </td>
+                                <td class="text-center"><span class="badge bg-light text-dark border">x @item.SoLuong</span></td>
+                                <td class="text-end text-muted">@item.DonGia.ToString("N0") đ</td>
+                                <td class="text-end fw-bold text-dark">@item.ThanhTien.ToString("N0") đ</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="3" class="text-end">Tạm tính:</th>
+                            <th class="text-end" id="tongTien">@Model.TongTien.ToString("N0") đ</th>
+                        </tr>
+                        <tr>
+                            <th colspan="3" class="text-end text-success">Mã giảm giá (Voucher):</th>
+                            <th class="text-end text-success" id="giamGia">-0 đ</th>
+                        </tr>
+                        <tr class="table-light">
+                            <th colspan="3" class="text-end fs-5">Tổng tiền phải trả:</th>
+                            <th class="text-end fs-4 text-danger fw-bold" id="thanhToan">@Model.TongTien.ToString("N0") đ</th>
+                        </tr>
+                    </tfoot>
+                </table>
             </div>
-            <div class="mb-3">
-                <label asp-for="GhiChu" class="form-label"></label>
-                <textarea asp-for="GhiChu" class="form-control" rows="2"></textarea>
-            </div>
-            <div class="mb-3">
-                <label asp-for="MaCodeVoucher" class="form-label"></label>
-                <div class="input-group">
-                    <input asp-for="MaCodeVoucher" id="maVoucher" class="form-control" />
-                    <button type="button" id="btnApDung" class="btn btn-outline-primary">Áp dụng</button>
+        </div>
+
+        @if (Model.Vouchers != null && Model.Vouchers.Any())
+        {
+            <div class="card p-3 border-0 shadow-sm rounded-4 bg-white">
+                <small class="fw-bold text-muted text-uppercase mb-2 d-block"><i class="bi bi-tag-fill text-warning me-1"></i> Gợi ý Voucher hiện có:</small>
+                <div class="d-flex gap-2 flex-wrap">
+                    @foreach (var v in Model.Vouchers)
+                    {
+                        <span class="badge bg-light text-dark border p-2 cursor-pointer" 
+                              style="cursor: pointer;"
+                              onclick="document.getElementById('maVoucher').value='@v.MaCode'; document.getElementById('btnApDung').click();">
+                            <b>@v.MaCode</b> (@(v.LoaiGiamGia == "PhanTram" ? $"Giảm {v.GiaTriGiam}%" : $"Giảm {v.GiaTriGiam:N0}đ"))
+                        </span>
+                    }
                 </div>
-                <small id="voucherMsg" class="text-muted"></small>
             </div>
-            <button type="submit" class="btn btn-success w-100">Đặt hàng</button>
-        </form>
+        }
+    </div>
+
+    <!-- Delivery & Checkout Form -->
+    <div class="col-lg-5">
+        <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
+            <h5 class="fw-bold mb-3 border-bottom pb-2">Thông tin nhận hàng</h5>
+            <form asp-action="DatHang" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                <div class="mb-3">
+                    <label asp-for="DiaChiGiaoHang" class="form-label fw-semibold"></label>
+                    <textarea asp-for="DiaChiGiaoHang" class="form-control" rows="2" placeholder="Số nhà, tên đường, phường/xã, quận/huyện..."></textarea>
+                    <span asp-validation-for="DiaChiGiaoHang" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="GhiChu" class="form-label fw-semibold"></label>
+                    <textarea asp-for="GhiChu" class="form-control" rows="2" placeholder="Ghi chú giao hàng nếu có (VD: Giao giờ hành chính)..."></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="MaCodeVoucher" class="form-label fw-semibold">Áp dụng mã giảm giá</label>
+                    <div class="input-group">
+                        <input asp-for="MaCodeVoucher" id="maVoucher" class="form-control text-uppercase" placeholder="Nhập mã voucher..." />
+                        <button type="button" id="btnApDung" class="btn btn-outline-primary px-3">
+                            Áp dụng
+                        </button>
+                    </div>
+                    <small id="voucherMsg" class="d-block mt-1"></small>
+                </div>
+
+                <button type="submit" class="btn btn-success btn-lg w-100 py-3 fw-bold shadow">
+                    <i class="bi bi-bag-check-fill me-1"></i> Xác nhận đặt hàng
+                </button>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -66,7 +115,8 @@
 <script>
     const tongTien = @Model.TongTien;
     document.getElementById('btnApDung').addEventListener('click', async () => {
-        const ma = document.getElementById('maVoucher').value;
+        const ma = document.getElementById('maVoucher').value.trim();
+        if (!ma) return;
         const res = await fetch('/GioHang/KiemTraVoucher', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -75,10 +125,11 @@
         const data = await res.json();
         const msgEl = document.getElementById('voucherMsg');
         msgEl.innerText = data.message;
-        msgEl.className = data.success ? 'text-success' : 'text-danger';
+        msgEl.className = data.success ? 'text-success fw-bold d-block mt-1' : 'text-danger d-block mt-1';
         if (data.success) {
-            document.getElementById('giamGia').innerText = data.giam.toLocaleString('vi-VN') + ' đ';
+            document.getElementById('giamGia').innerText = '-' + data.giam.toLocaleString('vi-VN') + ' đ';
             document.getElementById('thanhToan').innerText = (tongTien - data.giam).toLocaleString('vi-VN') + ' đ';
+            if (window.animateCartBadge) window.animateCartBadge();
         }
     });
 </script>

@@ -141,7 +141,7 @@
                         <div class="text-center mb-3">
                             <span class="badge bg-primary px-3 py-2 fw-semibold mb-2">QUÉT MÃ VIETQR ĐỂ THANH TOÁN</span>
                             <div class="d-flex justify-content-center">
-                                <img id="vietQrImg" src="https://img.vietqr.io/image/MB-036987654321-compact2.png?amount=@((long)Model.ThanhToan)&addInfo=DH%20UNETI" 
+                                <img id="vietQrImg" src="https://img.vietqr.io/image/MB-036987654321-compact2.png?amount=@((long)Model.ThanhToan)&addInfo=DH%20DIENTU" 
                                      alt="Mã QR Chuyển khoản" 
                                      class="img-fluid border rounded-3 p-2 bg-white shadow-sm" 
                                      style="max-width: 200px;" />
@@ -160,7 +160,7 @@
                             </div>
                             <div class="d-flex justify-content-between py-1 border-bottom">
                                 <span class="text-muted">Chủ tài khoản:</span>
-                                <span class="fw-bold text-uppercase">CUA HANG DIEN TU UNETI</span>
+                                <span class="fw-bold text-uppercase">CUA HANG DIEN TU</span>
                             </div>
                             <div class="d-flex justify-content-between py-1 border-bottom">
                                 <span class="text-muted">Số tiền chuyển:</span>
@@ -168,7 +168,7 @@
                             </div>
                             <div class="d-flex justify-content-between py-1">
                                 <span class="text-muted">Nội dung CK:</span>
-                                <span class="fw-bold font-monospace text-dark">DH UNETI</span>
+                                <span class="fw-bold font-monospace text-dark">DH DIENTU</span>
                             </div>
                         </div>
                         <div class="alert alert-info py-2 px-3 small mt-2 mb-0">
@@ -230,7 +230,7 @@
             const qrTien = document.getElementById('qrSoTien');
             if (qrTien) qrTien.innerText = soTienThanhToan.toLocaleString('vi-VN') + ' đ';
             if (qrImg) {
-                qrImg.src = `https://img.vietqr.io/image/MB-036987654321-compact2.png?amount=${Math.round(soTienThanhToan)}&addInfo=DH%20UNETI`;
+                qrImg.src = `https://img.vietqr.io/image/MB-036987654321-compact2.png?amount=${Math.round(soTienThanhToan)}&addInfo=DH%20DIENTU`;
             }
             if (window.animateCartBadge) window.animateCartBadge();
         }

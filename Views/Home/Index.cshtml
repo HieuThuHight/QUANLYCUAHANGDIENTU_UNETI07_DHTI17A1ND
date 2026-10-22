@@ -1,33 +1,174 @@
-﻿@{ ViewData["Title"] = "Trang chủ"; Layout = "_Layout"; }
+@model IEnumerable<QuanLyCuaHangDienTu.Models.Entities.SanPham>
+@{ 
+    ViewData["Title"] = "Trang chủ - Thế giới công nghệ chính hãng"; 
+    Layout = "_Layout"; 
+}
 
-<div class="text-center py-5">
-    <h1 class="display-4">🛒 Cửa hàng điện tử UNETI</h1>
-    <p class="lead">Chuyên cung cấp điện thoại, laptop, tablet, phụ kiện chính hãng</p>
-    <a asp-controller="SanPham" asp-action="Index" class="btn btn-primary btn-lg mt-3">
-        <i class="bi bi-grid"></i> Xem sản phẩm
-    </a>
+<!-- GSAP Hero Section -->
+<div class="hero-wrapper text-center my-3">
+    <div class="hero-badge">
+        <i class="bi bi-stars"></i> CỬA HÀNG ĐIỆN TỬ • CÔNG NGHỆ DẪN ĐẦU
+    </div>
+    <h1 class="hero-title mb-3">
+        Đỉnh Cao Công Nghệ<br />
+        <span class="text-primary" style="background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Trải Nghiệm Đẳng Cấp</span>
+    </h1>
+    <p class="hero-subtitle text-muted lead mb-4 mx-auto" style="max-width: 650px; font-size: 1.15rem;">
+        Khám phá bộ sưu tập Smartphone, Laptop, Tablet và Phụ kiện cao cấp nhập khẩu chính hãng với bảo hành 12-24 tháng và ưu đãi voucher cực hot!
+    </p>
+    <div class="hero-btn-group d-flex justify-content-center gap-3 flex-wrap">
+        <a asp-controller="SanPham" asp-action="Index" class="btn btn-primary btn-lg px-4 py-3 shadow-lg">
+            <i class="bi bi-grid-fill me-2"></i> Khám phá sản phẩm ngay
+        </a>
+        <a asp-controller="TaiKhoan" asp-action="DangKy" class="btn btn-outline-dark btn-lg px-4 py-3 bg-white">
+            <i class="bi bi-gift-fill text-danger me-2"></i> Nhận Voucher 500K
+        </a>
+    </div>
 </div>
 
-<div class="row mt-5">
-    <div class="col-md-4 text-center mb-4">
-        <div class="card h-100 p-4">
-            <i class="bi bi-truck display-3 text-primary"></i>
-            <h4 class="mt-3">Giao hàng nhanh</h4>
-            <p class="text-muted">Giao hàng toàn quốc, nhận hàng trong 2-3 ngày</p>
+<!-- Featured Products Section with Images -->
+@if (Model != null && Model.Any())
+{
+    <div class="my-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h6 class="text-primary fw-bold text-uppercase tracking-wider mb-1">Xu Hướng Nổi Bật</h6>
+                <h3 class="fw-bold mb-0">Sản phẩm công nghệ mới nhất</h3>
+            </div>
+            <a asp-controller="SanPham" asp-action="Index" class="btn btn-outline-primary btn-sm rounded-pill px-3 py-2">
+                Xem tất cả <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+
+        <div class="row g-4">
+            @foreach (var sp in Model)
+            {
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card product-card">
+                        <div class="product-img-wrapper">
+                            <img src="@(string.IsNullOrEmpty(sp.HinhAnh) ? "/images/no-image.png" : sp.HinhAnh)" 
+                                 alt="@sp.TenSanPham" 
+                                 onerror="this.onerror=null;this.src='/images/no-image.png';" />
+                            <span class="badge-brand">@sp.ThuongHieu</span>
+                        </div>
+                        <div class="card-body d-flex flex-column p-3">
+                            <span class="text-primary small fw-semibold text-uppercase mb-1">@sp.LoaiSanPham?.TenLoai</span>
+                            <h6 class="fw-bold text-dark text-truncate mb-2" title="@sp.TenSanPham">@sp.TenSanPham</h6>
+                            
+                            <div class="mt-auto">
+                                <div class="d-flex justify-content-between align-items-baseline mb-3">
+                                    <span class="text-danger fw-bold fs-5">@sp.DonGia.ToString("N0") đ</span>
+                                    <span class="badge bg-light text-muted border">Kho: @sp.SoLuongTon</span>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <a asp-controller="SanPham" asp-action="Details" asp-route-id="@sp.MaSanPham" class="btn btn-outline-primary btn-sm flex-fill">
+                                        Chi tiết
+                                    </a>
+                                    <button class="btn btn-sm btn-success flex-fill btn-add-cart-home" data-id="@sp.MaSanPham">
+                                        <i class="bi bi-cart-plus me-1"></i> Mua ngay
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
         </div>
     </div>
-    <div class="col-md-4 text-center mb-4">
-        <div class="card h-100 p-4">
-            <i class="bi bi-shield-check display-3 text-success"></i>
-            <h4 class="mt-3">Bảo hành chính hãng</h4>
-            <p class="text-muted">Sản phẩm chính hãng, bảo hành đầy đủ</p>
-        </div>
+}
+
+<!-- Feature Section with GSAP ScrollTrigger -->
+<div class="feature-section my-5">
+    <div class="text-center mb-5">
+        <h6 class="text-primary fw-bold text-uppercase tracking-wider">Lý do chọn Cửa Hàng Điện Tử</h6>
+        <h3 class="fw-bold">Cam kết chất lượng dịch vụ hàng đầu</h3>
     </div>
-    <div class="col-md-4 text-center mb-4">
-        <div class="card h-100 p-4">
-            <i class="bi bi-headset display-3 text-danger"></i>
-            <h4 class="mt-3">Hỗ trợ 24/7</h4>
-            <p class="text-muted">Đội ngũ hỗ trợ luôn sẵn sàng giúp đỡ</p>
+    <div class="row g-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="feature-box text-center">
+                <div class="feature-icon bg-primary bg-opacity-10 text-primary mx-auto">
+                    <i class="bi bi-lightning-charge-fill"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Giao hàng hỏa tốc</h5>
+                <p class="text-muted small mb-0">Miễn phí giao hàng toàn quốc cho đơn từ 2.000.000đ. Nhận hàng siêu tốc.</p>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="feature-box text-center">
+                <div class="feature-icon bg-success bg-opacity-10 text-success mx-auto">
+                    <i class="bi bi-patch-check-fill"></i>
+                </div>
+                <h5 class="fw-bold mb-2">100% Chính hãng</h5>
+                <p class="text-muted small mb-0">Cam kết hàng nguyên seal, bảo hành điện tử chính hãng từ 12 đến 24 tháng.</p>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="feature-box text-center">
+                <div class="feature-icon bg-warning bg-opacity-10 text-warning mx-auto">
+                    <i class="bi bi-ticket-perforated-fill"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Voucher hấp dẫn</h5>
+                <p class="text-muted small mb-0">Áp dụng mã giảm giá trực tiếp đến 1.000.000đ khi thanh toán giỏ hàng.</p>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="feature-box text-center">
+                <div class="feature-icon bg-danger bg-opacity-10 text-danger mx-auto">
+                    <i class="bi bi-arrow-repeat"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Đổi trả & Hoàn tiền</h5>
+                <p class="text-muted small mb-0">Chính sách hỗ trợ yêu cầu hoàn hàng tiện lợi, xử lý hoàn tiền minh bạch.</p>
+            </div>
         </div>
     </div>
 </div>
+
+<!-- Promo Banner -->
+<div class="card bg-dark text-white p-4 p-md-5 my-5 border-0 shadow-lg overflow-hidden position-relative" style="background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%) !important;">
+    <div class="row align-items-center position-relative" style="z-index: 2;">
+        <div class="col-lg-8 mb-4 mb-lg-0">
+            <span class="badge bg-warning text-dark mb-2 px-3 py-2 fw-bold">CHƯƠNG TRÌNH KHUYẾN MÃI</span>
+            <h2 class="display-6 fw-bold text-white mb-3">Siêu phẩm công nghệ giảm đến 20%</h2>
+            <p class="text-light text-opacity-75 mb-0">Nhập mã <b>GIAM20</b> tại giỏ hàng để được giảm ngay 20% cho các sản phẩm Laptop, Điện thoại thông minh mới nhất.</p>
+        </div>
+        <div class="col-lg-4 text-lg-end">
+            <a asp-controller="SanPham" asp-action="Index" class="btn btn-light btn-lg px-4 py-3 fw-bold text-primary shadow">
+                Xem ưu đãi ngay <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+    </div>
+    <!-- Decorative background elements -->
+    <i class="bi bi-laptop position-absolute text-white" style="font-size: 14rem; right: -30px; bottom: -50px; opacity: 0.05; pointer-events: none;"></i>
+</div>
+
+@section Scripts {
+<script>
+    document.querySelectorAll('.btn-add-cart-home').forEach(btn => {
+        btn.addEventListener('click', async e => {
+            const spId = parseInt(btn.dataset.id);
+            try {
+                const res = await fetch('/GioHang/Them', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ maSanPham: spId, soLuong: 1 })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const c = document.getElementById('cart-count');
+                    if (c) c.innerText = data.totalItems;
+                    if (window.animateCartBadge) window.animateCartBadge();
+                    alert('Đã thêm sản phẩm vào giỏ hàng!');
+                } else {
+                    if (res.status === 401 || data.message?.includes('đăng nhập')) {
+                        window.location.href = '/TaiKhoan/DangNhap';
+                    } else {
+                        alert(data.message || 'Vui lòng đăng nhập để mua hàng.');
+                    }
+                }
+            } catch (err) {
+                window.location.href = '/TaiKhoan/DangNhap';
+            }
+        });
+    });
+</script>
+}

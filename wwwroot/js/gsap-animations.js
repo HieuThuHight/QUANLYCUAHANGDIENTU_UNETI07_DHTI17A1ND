@@ -162,4 +162,51 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(window.animateCartBadge, 300);
         });
     });
+
+    // ==========================================
+    // 8. DARK / LIGHT THEME TOGGLE WITH GSAP
+    // ==========================================
+    const themeBtn = document.getElementById('themeToggleBtn');
+    const themeIcon = document.getElementById('themeIcon');
+    const themeText = document.getElementById('themeText');
+
+    function updateThemeUI(theme, animate = false) {
+        if (!themeIcon) return;
+        const isDark = theme === 'dark';
+        
+        if (animate && typeof gsap !== 'undefined') {
+            gsap.to(themeIcon, {
+                rotation: '+=360',
+                scale: 0.4,
+                duration: 0.25,
+                ease: 'power2.in',
+                onComplete: () => {
+                    themeIcon.className = isDark ? 'bi bi-sun-fill text-warning' : 'bi bi-moon-stars-fill text-warning';
+                    if (themeText) themeText.innerText = isDark ? 'Sáng' : 'Tối';
+                    gsap.to(themeIcon, {
+                        scale: 1,
+                        duration: 0.35,
+                        ease: 'back.out(2)'
+                    });
+                }
+            });
+        } else {
+            themeIcon.className = isDark ? 'bi bi-sun-fill text-warning' : 'bi bi-moon-stars-fill text-warning';
+            if (themeText) themeText.innerText = isDark ? 'Sáng' : 'Tối';
+        }
+    }
+
+    // Initialize UI on load
+    const currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
+    updateThemeUI(currentTheme, false);
+
+    if (themeBtn) {
+        themeBtn.addEventListener('click', () => {
+            const current = document.documentElement.getAttribute('data-bs-theme') || 'light';
+            const target = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-bs-theme', target);
+            localStorage.setItem('uneti-theme', target);
+            updateThemeUI(target, true);
+        });
+    }
 });

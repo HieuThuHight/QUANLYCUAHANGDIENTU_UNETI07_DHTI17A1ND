@@ -43,7 +43,7 @@
     <!-- Modern Sticky Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
         <div class="container">
-            <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+            <a class="navbar-brand" asp-controller="SanPham" asp-action="Index">
                 <i class="bi bi-cpu-fill text-primary"></i> UNETI Store
             </a>
             <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
@@ -56,14 +56,11 @@
                             <i class="bi bi-house"></i> Trang chủ
                         </a>
                     </li>
-                    @if (!laAdmin)
-                    {
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="SanPham" asp-action="Index">
-                                <i class="bi bi-grid-3x3-gap"></i> Sản phẩm
-                            </a>
-                        </li>
-                    }
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="SanPham" asp-action="Index">
+                            <i class="bi bi-grid-3x3-gap"></i> Sản phẩm
+                        </a>
+                    </li>
                 </ul>
                 <ul class="navbar-nav ms-auto align-items-lg-center">
                     @if (daDangNhap)
@@ -88,8 +85,8 @@
                         @if (laAdmin)
                         {
                             <li class="nav-item me-lg-2">
-                                <a class="nav-link btn btn-sm btn-outline-warning text-warning px-3" asp-controller="ThongKe" asp-action="Index">
-                                    <i class="bi bi-speedometer2"></i> Quản trị Admin
+                                <a class="btn btn-warning btn-sm text-dark fw-bold px-3 shadow-sm d-flex align-items-center gap-1" asp-controller="ThongKe" asp-action="Index">
+                                    <i class="bi bi-speedometer2"></i> Trang Quản Trị
                                 </a>
                             </li>
                         }
@@ -134,9 +131,9 @@
 
                     <!-- Dark / Light Theme Toggle -->
                     <li class="nav-item ms-lg-2 my-2 my-lg-0">
-                        <button id="themeToggleBtn" type="button" class="btn btn-sm rounded-pill px-3 py-1 d-flex align-items-center gap-2 theme-toggle-btn shadow-none" title="Chuyển chế độ Sáng / Tối">
-                            <i id="themeIcon" class="bi bi-moon-stars-fill text-warning"></i>
-                            <span id="themeText" class="small">Tối</span>
+                        <button type="button" onclick="toggleTheme()" class="btn btn-sm rounded-pill px-3 py-1 d-flex align-items-center gap-2 theme-toggle-btn shadow-none" title="Chuyển chế độ Sáng / Tối">
+                            <i class="bi bi-moon-stars-fill text-warning theme-toggle-icon"></i>
+                            <span class="small theme-toggle-text">Tối</span>
                         </button>
                     </li>
                 </ul>
@@ -174,36 +171,33 @@
     <!-- GSAP Global Animations -->
     <script src="~/js/gsap-animations.js"></script>
 
-    <!-- Bulletproof Dark / Light Theme Toggle -->
+    <!-- Global Dark / Light Theme Controller -->
     <script>
-        (function () {
-            function updateTheme(theme) {
-                document.documentElement.setAttribute('data-bs-theme', theme);
-                document.body.setAttribute('data-bs-theme', theme);
-                localStorage.setItem('uneti-theme', theme);
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'dark' : 'light';
+            const target = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-bs-theme', target);
+            document.body.setAttribute('data-bs-theme', target);
+            localStorage.setItem('uneti-theme', target);
+            applyThemeUI(target);
+        }
 
-                const icon = document.getElementById('themeIcon');
-                const text = document.getElementById('themeText');
-                if (icon) {
-                    icon.className = theme === 'dark' ? 'bi bi-sun-fill text-warning' : 'bi bi-moon-stars-fill text-warning';
-                }
-                if (text) {
-                    text.innerText = theme === 'dark' ? 'Sáng' : 'Tối';
-                }
-            }
-
-            document.addEventListener('click', function (e) {
-                const btn = e.target.closest('#themeToggleBtn, .theme-toggle-btn');
-                if (btn) {
-                    e.preventDefault();
-                    const cur = document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'dark' : 'light';
-                    const target = cur === 'dark' ? 'light' : 'dark';
-                    updateTheme(target);
-                }
+        function applyThemeUI(theme) {
+            const isDark = theme === 'dark';
+            document.querySelectorAll('.theme-toggle-icon').forEach(function (el) {
+                el.className = isDark ? 'bi bi-sun-fill text-warning theme-toggle-icon' : 'bi bi-moon-stars-fill text-warning theme-toggle-icon';
             });
+            document.querySelectorAll('.theme-toggle-text').forEach(function (el) {
+                el.innerText = isDark ? 'Sáng' : 'Tối';
+            });
+        }
 
+        // Apply on load
+        (function () {
             const saved = localStorage.getItem('uneti-theme') || 'light';
-            updateTheme(saved);
+            document.documentElement.setAttribute('data-bs-theme', saved);
+            document.body.setAttribute('data-bs-theme', saved);
+            applyThemeUI(saved);
         })();
     </script>
 

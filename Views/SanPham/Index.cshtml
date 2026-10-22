@@ -81,7 +81,7 @@
             <div class="d-flex align-items-center gap-2">
                 <span class="small text-muted fw-bold">Hiển thị:</span>
                 <select name="PageSize" class="form-select form-select-sm w-auto d-inline-block bg-light" onchange="this.form.submit()">
-                    @foreach (var size in new[] { 6, 9, 12, 24 })
+                    @foreach (var size in new[] { 12, 16, 24, 36 })
                     {
                         <option value="@size" selected="@(Model.PageSize == size)">@size sản phẩm/trang</option>
                     }

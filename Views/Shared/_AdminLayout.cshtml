@@ -26,13 +26,13 @@
         <!-- Modern Admin Sidebar -->
         <aside class="admin-sidebar d-flex flex-column justify-content-between">
             <div>
-                <div class="d-flex align-items-center gap-2 mb-4 pb-3 border-bottom border-secondary border-opacity-25">
+                <a asp-controller="SanPham" asp-action="Index" class="d-flex align-items-center gap-2 mb-4 pb-3 border-bottom border-secondary border-opacity-25 text-decoration-none" title="Xem danh sách sản phẩm">
                     <i class="bi bi-cpu-fill text-primary fs-3"></i>
                     <div>
                         <h5 class="fw-bold text-white mb-0">UNETI Store</h5>
                         <small class="text-muted" style="font-size: 0.75rem;">Hệ thống Quản Trị</small>
                     </div>
-                </div>
+                </a>
 
                 <ul class="nav flex-column">
                     <li><a class="nav-link" asp-controller="ThongKe" asp-action="Index"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
@@ -49,10 +49,11 @@
 
             <!-- Bottom Menu -->
             <div class="pt-3 border-top border-secondary border-opacity-25">
-                <a class="nav-link text-warning mb-2" asp-controller="Home" asp-action="Index">
-                    <i class="bi bi-box-arrow-up-right"></i> Xem trang chủ
+                <a class="btn btn-warning w-100 text-dark fw-bold d-flex align-items-center justify-content-center gap-2 mb-2 py-2 shadow-sm" asp-controller="Home" asp-action="Index" title="Trở về trang chủ bán hàng">
+                    <i class="bi bi-shop fs-5"></i>
+                    <span>Về trang bán hàng</span>
                 </a>
-                <a class="nav-link text-danger" asp-controller="TaiKhoan" asp-action="DangXuat">
+                <a class="nav-link text-danger py-2 d-flex align-items-center gap-2" asp-controller="TaiKhoan" asp-action="DangXuat">
                     <i class="bi bi-power"></i> Đăng xuất
                 </a>
                 @if (!string.IsNullOrEmpty(hoTen))
@@ -73,9 +74,12 @@
                     <i class="bi bi-shield-lock-fill text-primary me-2"></i> Bảng điều khiển quản trị viên
                 </div>
                 <div class="d-flex align-items-center gap-3">
-                    <button id="themeToggleBtn" type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 d-flex align-items-center gap-2 theme-toggle-btn" title="Chuyển chế độ Sáng / Tối">
-                        <i id="themeIcon" class="bi bi-moon-stars-fill text-warning"></i>
-                        <span id="themeText" class="small">Tối</span>
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1 shadow-sm">
+                        <i class="bi bi-box-arrow-up-right"></i> Xem trang bán hàng
+                    </a>
+                    <button type="button" onclick="toggleTheme()" class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1 d-flex align-items-center gap-2 theme-toggle-btn" title="Chuyển chế độ Sáng / Tối">
+                        <i class="bi bi-moon-stars-fill text-warning theme-toggle-icon"></i>
+                        <span class="small theme-toggle-text">Tối</span>
                     </button>
                     <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2">Phiên bản .NET 10 MVC</span>
                 </div>
@@ -95,36 +99,33 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
     <script src="~/js/gsap-animations.js"></script>
 
-    <!-- Bulletproof Dark / Light Theme Toggle -->
+    <!-- Global Dark / Light Theme Controller -->
     <script>
-        (function () {
-            function updateTheme(theme) {
-                document.documentElement.setAttribute('data-bs-theme', theme);
-                document.body.setAttribute('data-bs-theme', theme);
-                localStorage.setItem('uneti-theme', theme);
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'dark' : 'light';
+            const target = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-bs-theme', target);
+            document.body.setAttribute('data-bs-theme', target);
+            localStorage.setItem('uneti-theme', target);
+            applyThemeUI(target);
+        }
 
-                const icon = document.getElementById('themeIcon');
-                const text = document.getElementById('themeText');
-                if (icon) {
-                    icon.className = theme === 'dark' ? 'bi bi-sun-fill text-warning' : 'bi bi-moon-stars-fill text-warning';
-                }
-                if (text) {
-                    text.innerText = theme === 'dark' ? 'Sáng' : 'Tối';
-                }
-            }
-
-            document.addEventListener('click', function (e) {
-                const btn = e.target.closest('#themeToggleBtn, .theme-toggle-btn');
-                if (btn) {
-                    e.preventDefault();
-                    const cur = document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'dark' : 'light';
-                    const target = cur === 'dark' ? 'light' : 'dark';
-                    updateTheme(target);
-                }
+        function applyThemeUI(theme) {
+            const isDark = theme === 'dark';
+            document.querySelectorAll('.theme-toggle-icon').forEach(function (el) {
+                el.className = isDark ? 'bi bi-sun-fill text-warning theme-toggle-icon' : 'bi bi-moon-stars-fill text-warning theme-toggle-icon';
             });
+            document.querySelectorAll('.theme-toggle-text').forEach(function (el) {
+                el.innerText = isDark ? 'Sáng' : 'Tối';
+            });
+        }
 
+        // Apply on load
+        (function () {
             const saved = localStorage.getItem('uneti-theme') || 'light';
-            updateTheme(saved);
+            document.documentElement.setAttribute('data-bs-theme', saved);
+            document.body.setAttribute('data-bs-theme', saved);
+            applyThemeUI(saved);
         })();
     </script>
 

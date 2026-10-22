@@ -374,47 +374,79 @@ main {
 }
 
 /* ================== DARK MODE OVERRIDES ================== */
+[data-bs-theme="dark"], 
+[data-bs-theme="dark"] body {
+    background-color: #090d16 !important;
+    color: #f1f5f9 !important;
+}
+
 [data-bs-theme="dark"] .bg-white {
-    background-color: var(--card-bg) !important;
+    background-color: #111827 !important;
+    color: #f1f5f9 !important;
 }
 
 [data-bs-theme="dark"] .bg-light {
     background-color: #172033 !important;
-    color: var(--text-main) !important;
+    color: #f1f5f9 !important;
 }
 
-[data-bs-theme="dark"] .text-dark {
+[data-bs-theme="dark"] .text-dark,
+[data-bs-theme="dark"] h1, [data-bs-theme="dark"] h2, [data-bs-theme="dark"] h3,
+[data-bs-theme="dark"] h4, [data-bs-theme="dark"] h5, [data-bs-theme="dark"] h6 {
     color: #f8fafc !important;
 }
 
 [data-bs-theme="dark"] .card {
-    background: var(--card-bg);
-    border-color: var(--border-color);
+    background-color: #111827 !important;
+    border-color: #1f293d !important;
+    color: #f1f5f9 !important;
 }
 
 [data-bs-theme="dark"] .product-img-wrapper {
-    background: #172033;
+    background-color: #172033 !important;
 }
 
 [data-bs-theme="dark"] .feature-box {
-    background: var(--card-bg);
-    border-color: var(--border-color);
+    background-color: #111827 !important;
+    border-color: #1f293d !important;
+    color: #f1f5f9 !important;
 }
 
 [data-bs-theme="dark"] .table-custom {
-    background: var(--card-bg);
-    border-color: var(--border-color);
+    background-color: #111827 !important;
+    border-color: #1f293d !important;
 }
 
 [data-bs-theme="dark"] .table-custom th {
-    background: #172033;
-    color: #cbd5e1;
-    border-color: var(--border-color);
+    background-color: #172033 !important;
+    color: #cbd5e1 !important;
+    border-color: #1f293d !important;
 }
 
 [data-bs-theme="dark"] .table-custom td {
-    border-color: #1e293b;
-    color: #e2e8f0;
+    border-color: #1e293b !important;
+    color: #e2e8f0 !important;
+}
+
+[data-bs-theme="dark"] .table {
+    --bs-table-bg: transparent;
+    color: #f1f5f9 !important;
+}
+
+[data-bs-theme="dark"] .table-light {
+    --bs-table-bg: #172033 !important;
+    color: #f1f5f9 !important;
+}
+
+[data-bs-theme="dark"] .table td, [data-bs-theme="dark"] .table th {
+    border-color: #1f293d !important;
+    color: #f1f5f9;
+}
+
+[data-bs-theme="dark"] .modal-content {
+    background-color: #111827 !important;
+    color: #f1f5f9 !important;
+    border-color: #1f293d !important;
 }
 
 [data-bs-theme="dark"] .table-custom tbody tr:hover {

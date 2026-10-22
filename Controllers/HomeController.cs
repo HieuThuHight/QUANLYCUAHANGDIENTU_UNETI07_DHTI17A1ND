@@ -19,10 +19,6 @@ namespace QuanLyCuaHangDienTu.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var vaiTro = HttpContext.Session.GetString("VaiTro");
-            if (vaiTro == "Admin")
-                return RedirectToAction("Index", "ThongKe");
-
             var sanPhams = await _context.SanPhams
                 .Include(s => s.LoaiSanPham)
                 .Where(s => s.TrangThai)

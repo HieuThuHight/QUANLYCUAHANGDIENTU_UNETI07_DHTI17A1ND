@@ -95,6 +95,39 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
     <script src="~/js/gsap-animations.js"></script>
 
+    <!-- Bulletproof Dark / Light Theme Toggle -->
+    <script>
+        (function () {
+            function updateTheme(theme) {
+                document.documentElement.setAttribute('data-bs-theme', theme);
+                document.body.setAttribute('data-bs-theme', theme);
+                localStorage.setItem('uneti-theme', theme);
+
+                const icon = document.getElementById('themeIcon');
+                const text = document.getElementById('themeText');
+                if (icon) {
+                    icon.className = theme === 'dark' ? 'bi bi-sun-fill text-warning' : 'bi bi-moon-stars-fill text-warning';
+                }
+                if (text) {
+                    text.innerText = theme === 'dark' ? 'Sáng' : 'Tối';
+                }
+            }
+
+            document.addEventListener('click', function (e) {
+                const btn = e.target.closest('#themeToggleBtn, .theme-toggle-btn');
+                if (btn) {
+                    e.preventDefault();
+                    const cur = document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'dark' : 'light';
+                    const target = cur === 'dark' ? 'light' : 'dark';
+                    updateTheme(target);
+                }
+            });
+
+            const saved = localStorage.getItem('uneti-theme') || 'light';
+            updateTheme(saved);
+        })();
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

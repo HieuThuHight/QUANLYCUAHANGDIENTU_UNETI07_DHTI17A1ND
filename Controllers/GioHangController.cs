@@ -188,12 +188,17 @@ namespace QuanLyCuaHangDienTu.Controllers
                 maVoucher = v?.MaVoucher;
             }
 
+            var phuongThucStr = model.PhuongThucThanhToan == "ChuyenKhoan" 
+                ? "Chuyển khoản ngân hàng (VietQR)" 
+                : "Thanh toán khi nhận hàng (COD)";
+            var ghiChuDayDu = $"[PTTT: {phuongThucStr}]" + (string.IsNullOrWhiteSpace(model.GhiChu) ? "" : $" | {model.GhiChu.Trim()}");
+
             var donHang = new DonHang
             {
                 MaKhachHang = maKH,
                 NgayDat = DateTime.Now,
                 DiaChiGiaoHang = model.DiaChiGiaoHang,
-                GhiChu = model.GhiChu,
+                GhiChu = ghiChuDayDu,
                 TongTien = tongTien - giamGia,
                 GiamGia = giamGia,
                 MaVoucher = maVoucher,

@@ -1,6 +1,6 @@
 ﻿@model QuanLyCuaHangDienTu.Helpers.PaginatedList<QuanLyCuaHangDienTu.Models.Entities.DonHang>
 @{ ViewData["Title"] = "Quản lý đơn hàng"; Layout = "_AdminLayout"; }
-
+@Html.AntiForgeryToken()
 <h2>Quản lý đơn hàng</h2>
 
 <form method="get" class="row g-2 mb-3">
@@ -60,11 +60,19 @@
     document.querySelectorAll('.btn-tt').forEach(btn => {
         btn.addEventListener('click', async () => {
             if (!confirm('Chuyển trạng thái?')) return;
+            
+            // Lấy token bảo mật
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            
             const res = await fetch('/DonHang/ChuyenTrangThai', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `id=${btn.dataset.id}&trangThai=${btn.dataset.tt}`
+                headers: { 
+                    'Content-Type': 'application/x-www-form-urlencoded' 
+                },
+                // Gửi kèm token trong body
+                body: `id=${btn.dataset.id}&trangThai=${btn.dataset.tt}&__RequestVerificationToken=${token}`
             });
+            
             const data = await res.json();
             alert(data.message);
             if (data.success) location.reload();

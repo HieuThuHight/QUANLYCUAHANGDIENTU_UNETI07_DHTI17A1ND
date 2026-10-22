@@ -8,9 +8,19 @@ using QuanLyCuaHangDienTu.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Ensure WebRootPath is always found whether run via VS, dotnet run, or bin output
+if (string.IsNullOrEmpty(builder.Environment.WebRootPath) || !Directory.Exists(builder.Environment.WebRootPath))
+{
+    var p1 = Path.Combine(builder.Environment.ContentRootPath, "wwwroot");
+    var p2 = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "..", "..", "..", "wwwroot"));
+    if (Directory.Exists(p1)) builder.Environment.WebRootPath = p1;
+    else if (Directory.Exists(p2)) builder.Environment.WebRootPath = p2;
+}
+
 // DbContext
 builder.Services.AddDbContext<AppDbContext>(options => 
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+           .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
 // Session
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>

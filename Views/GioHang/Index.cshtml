@@ -48,6 +48,7 @@ else
                                     <td>
                                         <img src="@(string.IsNullOrEmpty(item.HinhAnh) ? "/images/no-image.png" : item.HinhAnh)" 
                                              style="width:70px; height:70px; object-fit:cover; border-radius: 10px;" 
+                                             onerror="this.onerror=null;this.src='/images/no-image.png';"
                                              class="border" />
                                     </td>
                                     <td>

@@ -181,7 +181,7 @@ namespace QuanLyCuaHangDienTu.Controllers
 
             return tk.VaiTro == "Admin"
                 ? RedirectToAction("Index", "ThongKe")
-                : RedirectToAction("Index", "Home");
+                : RedirectToAction("Index", "SanPham");
         }
 
         // ĐĂNG KÝ

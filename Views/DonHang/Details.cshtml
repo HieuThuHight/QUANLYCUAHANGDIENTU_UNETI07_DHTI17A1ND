@@ -1,4 +1,4 @@
-﻿@model QuanLyCuaHangDienTu.Models.Entities.DonHang
+@model QuanLyCuaHangDienTu.Models.Entities.DonHang
 @using QuanLyCuaHangDienTu.Helpers
 @inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 @{
@@ -13,6 +13,7 @@
     var noiDungChuyenKhoan = $"DH{Model.MaDonHang}";
     var soTienLong = Convert.ToInt64(Model.TongTien);
     var isChoXacNhan = (Model.TrangThai == "ChoXacNhan");
+    var isDaHuy = (Model.TrangThai == "DaHuy" || Model.TrangThaiHuy == "DaHuy");
 
     // Sinh chuẩn chuỗi EMVCo Napas247 cho Liobank BIN 963369
     var emvcoPayload = VietQRHelper.GeneratePayload(bin, stk, soTienLong, noiDungChuyenKhoan);
@@ -95,7 +96,16 @@
                 </div>
                 <div class="row mb-2">
                     <div class="col-sm-4 text-muted">Trạng thái:</div>
-                    <div class="col-sm-8" id="textTrangThai"><span class="badge bg-info text-dark">@Model.TrangThai</span></div>
+                    <div class="col-sm-8" id="textTrangThai">
+                        <span class="badge @(Model.TrangThai switch {
+                            "ChoXacNhan" => "bg-warning text-dark",
+                            "DaXacNhan" => "bg-info text-dark",
+                            "DangGiao" => "bg-primary text-white",
+                            "DaHoanThanh" => "bg-success text-white",
+                            "DaHuy" => "bg-danger text-white",
+                            _ => "bg-secondary text-white"
+                        })">@Model.TrangThai</span>
+                    </div>
                 </div>
                 @if (Model.Voucher != null)
                 {
@@ -121,8 +131,32 @@
 
     <!-- Cột mã QR thanh toán động -->
     <div class="col-lg-5">
-        <div class="card shadow-sm border-primary h-100" id="cardVietQR">
-            @if (isChoXacNhan)
+        <div class="card shadow-sm @(isDaHuy ? "border-danger" : "border-primary") h-100" id="cardVietQR">
+            @if (isDaHuy)
+            {
+                <div class="card-header bg-danger text-white fw-bold text-center">
+                    <i class="bi bi-x-circle-fill me-1"></i> ĐƠN HÀNG ĐÃ BỊ HỦY
+                </div>
+                <div class="card-body text-center p-4 d-flex flex-column justify-content-center align-items-center">
+                    <div class="text-danger mb-3" style="font-size: 3.5rem;">
+                        <i class="bi bi-x-octagon-fill"></i>
+                    </div>
+                    <h5 class="text-danger fw-bold">ĐƠN HÀNG ĐÃ ĐƯỢC HỦY</h5>
+                    <p class="text-muted small mb-3">
+                        Đơn hàng này đã bị hủy. Cổng thanh toán VietQR đã đóng và tiến trình giao hàng đã dừng lại.
+                    </p>
+                    @if (!string.IsNullOrWhiteSpace(Model.LyDoHuy))
+                    {
+                        <div class="alert alert-danger-subtle border border-danger text-danger text-start small w-100 mb-2">
+                            <strong><i class="bi bi-exclamation-triangle-fill me-1"></i>Lý do hủy:</strong> @Model.LyDoHuy
+                        </div>
+                    }
+                    <div class="badge bg-danger-subtle text-danger border border-danger p-2">
+                        Mã đơn: #@Model.MaDonHang • Trạng thái: Đã hủy
+                    </div>
+                </div>
+            }
+            else if (isChoXacNhan)
             {
                 <div class="card-header bg-primary text-white fw-bold text-center">
                     <i class="bi bi-qr-code-scan me-1"></i> THANH TOÁN VIETQR NAPAS247
@@ -341,7 +375,11 @@
             try {
                 const res = await fetch(`/DonHang/KiemTraTrangThai?id=${maDonHang}`);
                 const data = await res.json();
-                if (data.success && data.daXacNhan) {
+                if (data.success) {
+                if (data.daHuy || data.trangThai === 'DaHuy') {
+                    clearInterval(pollInterval);
+                    location.reload();
+                } else if (data.daXacNhan) {
                     clearInterval(pollInterval);
                     onThanhToanThanhCong();
                 }

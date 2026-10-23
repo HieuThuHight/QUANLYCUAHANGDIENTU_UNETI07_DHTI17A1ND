@@ -1,7 +1,20 @@
-﻿@model QuanLyCuaHangDienTu.Models.Entities.DonHang
+@model QuanLyCuaHangDienTu.Models.Entities.DonHang
 @{ ViewData["Title"] = "Chi tiết đơn hàng"; Layout = "_AdminLayout"; }
 
 <h2>Đơn hàng #@Model.MaDonHang</h2>
+
+@* THÊM ĐOẠN NÀY ĐỂ HIỂN THỊ LÝ DO KHÁCH TỰ HỦY ĐƠN *@
+@if (Model.TrangThai == "DaHuy" && !string.IsNullOrEmpty(Model.LyDoHuy))
+{
+    <div class="alert alert-danger">
+        <h6 class="fw-bold mb-1">❌ Đơn hàng đã bị khách hàng tự hủy</h6>
+        <div><strong>Lý do:</strong> @Model.LyDoHuy</div>
+        @if (Model.NgayYeuCauHuy.HasValue)
+        {
+            <small class="text-muted">Thời gian hủy: @Model.NgayYeuCauHuy.Value.ToString("dd/MM/yyyy HH:mm")</small>
+        }
+    </div>
+}
 
 <div class="row">
     <div class="col-md-6">
@@ -23,7 +36,14 @@
                 <p><b>Địa chỉ giao:</b> @Model.DiaChiGiaoHang</p>
                 <p><b>Ghi chú:</b> @Model.GhiChu</p>
                 <p><b>Voucher:</b> @(Model.Voucher?.MaCode ?? "Không có")</p>
-                <p><b>Trạng thái:</b> <span class="badge bg-info">@Model.TrangThai</span></p>
+                <p><b>Trạng thái:</b> <span id="adminBadgeTrangThai" class="badge @(Model.TrangThai switch {
+                    "ChoXacNhan" => "bg-warning text-dark",
+                    "DaXacNhan" => "bg-info text-dark",
+                    "DangGiao" => "bg-primary",
+                    "DaHoanThanh" => "bg-success",
+                    "DaHuy" => "bg-danger",
+                    _ => "bg-secondary"
+                })">@Model.TrangThai</span></p>
             </div>
         </div>
     </div>
@@ -72,3 +92,40 @@
     <a asp-controller="Export" asp-action="PdfHoaDon" asp-route-id="@Model.MaDonHang" class="btn btn-outline-danger" target="_blank">Xuất hóa đơn PDF</a>
     <a asp-action="QuanLy" class="btn btn-secondary">Quay lại</a>
 </div>
+
+<div id="adminLiveNotification" class="mt-3"></div>
+
+@section Scripts {
+    <script>
+        const maDon = @Model.MaDonHang;
+        let currentStatus = '@Model.TrangThai';
+
+        if (currentStatus === 'DangGiao' || currentStatus === 'ChoXacNhan') {
+            setInterval(async () => {
+                try {
+                    const res = await fetch('/DonHang/KiemTraTrangThai?id=' + maDon);
+                    const data = await res.json();
+                    if (data.success && data.trangThai !== currentStatus) {
+                        currentStatus = data.trangThai;
+                        const badge = document.getElementById('adminBadgeTrangThai');
+                        if (badge) {
+                            badge.innerText = data.trangThai;
+                            badge.className = data.trangThai === 'DaHoanThanh' ? 'badge bg-success' : 'badge bg-info';
+                        }
+                        const notif = document.getElementById('adminLiveNotification');
+                        if (notif) {
+                            notif.innerHTML = 
+                                '<div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">' +
+                                '<i class="bi bi-check-circle-fill me-2"></i>' +
+                                '<strong>Đã cập nhật:</strong> Đơn hàng #' + maDon + ' vừa chuyển sang trạng thái <strong>' + data.trangThai + '</strong>!' +
+                                '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                                '</div>';
+                        }
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+            }, 3000);
+        }
+    </script>
+}

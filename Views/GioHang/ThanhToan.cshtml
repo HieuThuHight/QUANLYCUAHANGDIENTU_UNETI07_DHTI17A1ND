@@ -1,239 +1,170 @@
 @model QuanLyCuaHangDienTu.Models.ViewModels.CheckoutViewModel
-@{ 
-    ViewData["Title"] = "Thanh toán đơn hàng"; 
-    Layout = "_Layout"; 
-}
+@{ ViewData["Title"] = "Thanh toán"; Layout = "_Layout"; }
 
-<div class="mb-4">
-    <h2 class="fw-bold mb-1"><i class="bi bi-credit-card-2-front-fill text-primary me-2"></i> Thanh toán đơn hàng</h2>
-    <p class="text-muted small mb-0">Xác nhận thông tin giao hàng và áp dụng mã giảm giá ưu đãi</p>
-</div>
+<h2>Thanh toán đơn hàng</h2>
 
-<div class="row g-4">
-    <!-- Order Items List -->
-    <div class="col-lg-7">
-        <div class="card p-4 border-0 shadow-sm rounded-4 bg-white mb-4">
-            <h5 class="fw-bold mb-3 border-bottom pb-2">Danh sách sản phẩm (@Model.Items.Count)</h5>
-            <div class="table-responsive">
-                <table class="table align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Sản phẩm</th>
-                            <th class="text-center">Số lượng</th>
-                            <th class="text-end">Đơn giá</th>
-                            <th class="text-end">Thành tiền</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model.Items)
-                        {
-                            <tr>
-                                <td>
-                                    <div class="fw-bold text-dark">@item.TenSanPham</div>
-                                </td>
-                                <td class="text-center"><span class="badge bg-light text-dark border">x @item.SoLuong</span></td>
-                                <td class="text-end text-muted">@item.DonGia.ToString("N0") đ</td>
-                                <td class="text-end fw-bold text-dark">@item.ThanhTien.ToString("N0") đ</td>
-                            </tr>
-                        }
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <th colspan="3" class="text-end">Tạm tính:</th>
-                            <th class="text-end" id="tongTien">@Model.TongTien.ToString("N0") đ</th>
-                        </tr>
-                        <tr>
-                            <th colspan="3" class="text-end text-success">Mã giảm giá (Voucher):</th>
-                            <th class="text-end text-success" id="giamGia">-0 đ</th>
-                        </tr>
-                        <tr class="table-light">
-                            <th colspan="3" class="text-end fs-5">Tổng tiền phải trả:</th>
-                            <th class="text-end fs-4 text-danger fw-bold" id="thanhToan">@Model.TongTien.ToString("N0") đ</th>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-        </div>
-
-        @if (Model.Vouchers != null && Model.Vouchers.Any())
-        {
-            <div class="card p-3 border-0 shadow-sm rounded-4 bg-white">
-                <small class="fw-bold text-muted text-uppercase mb-2 d-block"><i class="bi bi-tag-fill text-warning me-1"></i> Gợi ý Voucher hiện có:</small>
-                <div class="d-flex gap-2 flex-wrap">
-                    @foreach (var v in Model.Vouchers)
-                    {
-                        <span class="badge bg-light text-dark border p-2 cursor-pointer" 
-                              style="cursor: pointer;"
-                              onclick="document.getElementById('maVoucher').value='@v.MaCode'; document.getElementById('btnApDung').click();">
-                            <b>@v.MaCode</b> (@(v.LoaiGiamGia == "PhanTram" ? $"Giảm {v.GiaTriGiam}%" : $"Giảm {v.GiaTriGiam:N0}đ"))
-                        </span>
-                    }
-                </div>
-            </div>
-        }
+<div class="row">
+    <div class="col-md-7">
+        <table class="table">
+            <thead>
+                <tr><th>Sản phẩm</th><th>SL</th><th>Đơn giá</th><th>Thành tiền</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Items)
+                {
+                    <tr>
+                        <td>@item.TenSanPham</td>
+                        <td>@item.SoLuong</td>
+                        <td>@item.DonGia.ToString("N0") đ</td>
+                        <td>@item.ThanhTien.ToString("N0") đ</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="3" class="text-end">Tổng cộng:</th>
+                    <th id="tongTien">@Model.TongTien.ToString("N0") đ</th>
+                </tr>
+                <tr>
+                    <th colspan="3" class="text-end">Giảm giá:</th>
+                    <th id="giamGia" class="text-success">0 đ</th>
+                </tr>
+                <tr>
+                    <th colspan="3" class="text-end">Thanh toán:</th>
+                    <th id="thanhToan" class="text-danger">@Model.TongTien.ToString("N0") đ</th>
+                </tr>
+            </tfoot>
+        </table>
     </div>
+    <div class="col-md-5">
+        <form asp-action="DatHang" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <div class="mb-3">
+                <label asp-for="DiaChiGiaoHang" class="form-label fw-bold"></label>
+                <input asp-for="DiaChiGiaoHang" class="form-control" />
+                <span asp-validation-for="DiaChiGiaoHang" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="GhiChu" class="form-label fw-bold"></label>
+                <textarea asp-for="GhiChu" class="form-control" rows="2" placeholder="Ghi chú về đơn hàng, thời gian giao hàng..."></textarea>
+            </div>
 
-    <!-- Delivery & Checkout Form -->
-    <div class="col-lg-5">
-        <div class="card p-4 border-0 shadow-sm rounded-4 bg-white">
-            <h5 class="fw-bold mb-3 border-bottom pb-2">Thông tin nhận hàng</h5>
-            <form asp-action="DatHang" method="post">
-                @Html.AntiForgeryToken()
-                <div asp-validation-summary="All" class="text-danger mb-3"></div>
-
-                <div class="mb-3">
-                    <label asp-for="DiaChiGiaoHang" class="form-label fw-semibold"></label>
-                    <textarea asp-for="DiaChiGiaoHang" class="form-control" rows="2" placeholder="Số nhà, tên đường, phường/xã, quận/huyện..."></textarea>
-                    <span asp-validation-for="DiaChiGiaoHang" class="text-danger small"></span>
+            <!-- Khối Voucher & Gợi ý Voucher -->
+            <div class="mb-3">
+                <label asp-for="MaCodeVoucher" class="form-label fw-bold"><i class="bi bi-ticket-perforated text-danger"></i> Mã Voucher giảm giá:</label>
+                <div class="input-group mb-2">
+                    <input asp-for="MaCodeVoucher" id="maVoucher" class="form-control text-uppercase fw-bold" placeholder="Nhập mã hoặc chọn bên dưới" />
+                    <button type="button" id="btnApDung" class="btn btn-outline-primary fw-semibold">Áp dụng</button>
                 </div>
+                <div id="voucherMsg" class="small fw-semibold mb-2"></div>
 
-                <div class="mb-3">
-                    <label asp-for="GhiChu" class="form-label fw-semibold"></label>
-                    <textarea asp-for="GhiChu" class="form-control" rows="2" placeholder="Ghi chú giao hàng nếu có (VD: Giao giờ hành chính)..."></textarea>
-                </div>
-
-                <div class="mb-4">
-                    <label asp-for="MaCodeVoucher" class="form-label fw-semibold">Áp dụng mã giảm giá</label>
-                    <div class="input-group">
-                        <input asp-for="MaCodeVoucher" id="maVoucher" class="form-control text-uppercase" placeholder="Nhập mã voucher..." />
-                        <button type="button" id="btnApDung" class="btn btn-outline-primary px-3">
-                            Áp dụng
-                        </button>
-                    </div>
-                    <small id="voucherMsg" class="d-block mt-1"></small>
-                </div>
-
-                <!-- Phương thức thanh toán -->
-                <div class="mb-4">
-                    <label class="form-label fw-bold d-block"><i class="bi bi-wallet2 text-primary me-1"></i> Phương thức thanh toán</label>
-                    <div class="row g-2">
-                        <!-- Tiền mặt khi nhận hàng (COD) -->
-                        <div class="col-12">
-                            <label class="payment-option-card d-flex align-items-center gap-3 p-3 border rounded-3 w-100" for="paymentCOD" style="cursor: pointer;">
-                                <input type="radio" asp-for="PhuongThucThanhToan" value="COD" id="paymentCOD" class="form-check-input mt-0" checked />
-                                <div class="bg-success bg-opacity-10 text-success p-2 rounded-circle fs-4 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
-                                    <i class="bi bi-cash-stack"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <div class="fw-bold">Thanh toán tiền mặt khi nhận hàng (COD)</div>
-                                    <small class="text-muted">Kiểm tra sản phẩm và thanh toán tiền mặt trực tiếp cho shipper khi nhận hàng</small>
-                                </div>
-                            </label>
+                @if (Model.Vouchers != null && Model.Vouchers.Any())
+                {
+                    <div class="card bg-light border p-2 mb-2 shadow-sm rounded">
+                        <div class="fw-bold small text-primary mb-2">
+                            <i class="bi bi-gift-fill text-warning me-1"></i> GỢI Ý MÃ GIẢM GIÁ CHO BẠN:
                         </div>
-
-                        <!-- Chuyển khoản ngân hàng (VietQR) -->
-                        <div class="col-12">
-                            <label class="payment-option-card d-flex align-items-center gap-3 p-3 border rounded-3 w-100" for="paymentCK" style="cursor: pointer;">
-                                <input type="radio" asp-for="PhuongThucThanhToan" value="ChuyenKhoan" id="paymentCK" class="form-check-input mt-0" />
-                                <div class="bg-primary bg-opacity-10 text-primary p-2 rounded-circle fs-4 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
-                                    <i class="bi bi-qr-code-scan"></i>
+                        <div class="d-flex flex-column gap-2" style="max-height: 220px; overflow-y: auto;">
+                            @foreach (var v in Model.Vouchers)
+                            {
+                                var duDieuKien = Model.TongTien >= v.DonHangToiThieu;
+                                <div class="p-2 border rounded bg-white d-flex justify-content-between align-items-center @(!duDieuKien ? "opacity-75" : "")">
+                                    <div>
+                                        <div class="fw-bold">
+                                            <span class="badge bg-warning text-dark me-1">@v.MaCode</span>
+                                            <span class="small text-dark">@v.TenVoucher</span>
+                                        </div>
+                                        <div class="small text-muted" style="font-size: 11px;">
+                                            @(v.LoaiGiamGia == "PhanTram" ? $"Giảm {v.GiaTriGiam:N0}%" : $"Giảm {v.GiaTriGiam:N0} đ")
+                                            • Đơn tối thiểu: <b>@v.DonHangToiThieu.ToString("N0") đ</b>
+                                        </div>
+                                        @if (!duDieuKien)
+                                        {
+                                            <span class="badge bg-secondary" style="font-size: 10px;">Cần thêm @((v.DonHangToiThieu - Model.TongTien).ToString("N0")) đ</span>
+                                        }
+                                    </div>
+                                    <div>
+                                        @if (duDieuKien)
+                                        {
+                                            <button type="button" class="btn btn-sm btn-outline-success py-1 px-2 fw-semibold btn-chon-voucher" data-code="@v.MaCode">
+                                                Dùng mã
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button type="button" class="btn btn-sm btn-light py-1 px-2 text-muted" disabled style="font-size: 11px;">
+                                                Chưa đủ
+                                            </button>
+                                        }
+                                    </div>
                                 </div>
-                                <div class="flex-grow-1">
-                                    <div class="fw-bold">Chuyển khoản ngân hàng (VietQR 24/7)</div>
-                                    <small class="text-muted">Quét mã QR bằng ứng dụng ngân hàng bất kỳ, xác nhận đơn tức thì</small>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Hộp thông tin chuyển khoản VietQR -->
-                    <div id="bankTransferBox" class="mt-3 p-3 rounded-4 border bg-light" style="display: none;">
-                        <div class="text-center mb-3">
-                            <span class="badge bg-primary px-3 py-2 fw-semibold mb-2">QUÉT MÃ VIETQR ĐỂ THANH TOÁN</span>
-                            <div class="d-flex justify-content-center">
-                                <img id="vietQrImg" src="https://img.vietqr.io/image/MB-036987654321-compact2.png?amount=@((long)Model.ThanhToan)&addInfo=DH%20DIENTU" 
-                                     alt="Mã QR Chuyển khoản" 
-                                     class="img-fluid border rounded-3 p-2 bg-white shadow-sm" 
-                                     style="max-width: 200px;" />
-                            </div>
-                            <small class="text-muted d-block mt-1">Hỗ trợ tất cả ứng dụng ngân hàng và ví điện tử</small>
-                        </div>
-
-                        <div class="border-top pt-2 small">
-                            <div class="d-flex justify-content-between py-1 border-bottom">
-                                <span class="text-muted">Ngân hàng:</span>
-                                <span class="fw-bold">MB Bank (Ngân hàng Quân Đội)</span>
-                            </div>
-                            <div class="d-flex justify-content-between py-1 border-bottom">
-                                <span class="text-muted">Số tài khoản:</span>
-                                <span class="fw-bold text-primary font-monospace fs-6">036987654321</span>
-                            </div>
-                            <div class="d-flex justify-content-between py-1 border-bottom">
-                                <span class="text-muted">Chủ tài khoản:</span>
-                                <span class="fw-bold text-uppercase">CUA HANG DIEN TU</span>
-                            </div>
-                            <div class="d-flex justify-content-between py-1 border-bottom">
-                                <span class="text-muted">Số tiền chuyển:</span>
-                                <span class="fw-bold text-danger fs-6" id="qrSoTien">@Model.ThanhToan.ToString("N0") đ</span>
-                            </div>
-                            <div class="d-flex justify-content-between py-1">
-                                <span class="text-muted">Nội dung CK:</span>
-                                <span class="fw-bold font-monospace text-dark">DH DIENTU</span>
-                            </div>
-                        </div>
-                        <div class="alert alert-info py-2 px-3 small mt-2 mb-0">
-                            <i class="bi bi-info-circle me-1"></i> Sau khi chuyển khoản thành công, nhấn <b>Xác nhận đặt hàng</b> để hoàn tất.
+                            }
                         </div>
                     </div>
-                </div>
+                }
+            </div>
 
-                <button type="submit" class="btn btn-success btn-lg w-100 py-3 fw-bold shadow">
-                    <i class="bi bi-bag-check-fill me-1"></i> Xác nhận đặt hàng
-                </button>
-            </form>
-        </div>
+            <div class="mb-3 p-3 bg-light border rounded">
+                <label class="form-label fw-bold text-primary mb-2"><i class="bi bi-wallet2"></i> Phương thức thanh toán:</label>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="PhuongThucThanhToan" id="ptQR" value="VietQR" checked>
+                    <label class="form-check-label fw-semibold" for="ptQR">
+                        Chuyển khoản VietQR Napas247 (Liobank / OCB)
+                    </label>
+                    <div class="text-muted small">Sau khi bấm "Đặt hàng", hệ thống sẽ hiển thị mã VietQR động để bạn quét app ngân hàng thanh toán ngay.</div>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="PhuongThucThanhToan" id="ptCOD" value="COD">
+                    <label class="form-check-label fw-semibold" for="ptCOD">
+                        Thanh toán khi nhận hàng (COD)
+                    </label>
+                    <div class="text-muted small">Thanh toán tiền mặt cho nhân viên giao hàng.</div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100 py-2 fw-bold">Xác nhận đặt hàng</button>
+        </form>
     </div>
 </div>
 
 @section Scripts {
 <script>
     const tongTien = @Model.TongTien;
-    let soTienThanhToan = @Model.ThanhToan;
 
-    // Toggle Payment Method view
-    const codRadio = document.getElementById('paymentCOD');
-    const ckRadio = document.getElementById('paymentCK');
-    const bankBox = document.getElementById('bankTransferBox');
-
-    function updatePaymentView() {
-        if (ckRadio && ckRadio.checked) {
-            bankBox.style.display = 'block';
-        } else {
-            bankBox.style.display = 'none';
+    async function applyVoucher(ma) {
+        if (!ma || !ma.trim()) {
+            document.getElementById('voucherMsg').innerText = 'Vui lòng nhập hoặc chọn mã voucher.';
+            document.getElementById('voucherMsg').className = 'text-danger small fw-semibold';
+            return;
         }
-    }
-
-    codRadio?.addEventListener('change', updatePaymentView);
-    ckRadio?.addEventListener('change', updatePaymentView);
-    updatePaymentView();
-
-    // Apply Voucher
-    document.getElementById('btnApDung').addEventListener('click', async () => {
-        const ma = document.getElementById('maVoucher').value.trim();
-        if (!ma) return;
         const res = await fetch('/GioHang/KiemTraVoucher', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ maCode: ma, tongTien: tongTien })
+            body: JSON.stringify({ maCode: ma.trim(), tongTien: tongTien })
         });
         const data = await res.json();
         const msgEl = document.getElementById('voucherMsg');
         msgEl.innerText = data.message;
-        msgEl.className = data.success ? 'text-success fw-bold d-block mt-1' : 'text-danger d-block mt-1';
+        msgEl.className = data.success ? 'text-success small fw-semibold' : 'text-danger small fw-semibold';
         if (data.success) {
-            soTienThanhToan = tongTien - data.giam;
-            document.getElementById('giamGia').innerText = '-' + data.giam.toLocaleString('vi-VN') + ' đ';
-            document.getElementById('thanhToan').innerText = soTienThanhToan.toLocaleString('vi-VN') + ' đ';
-            
-            // Update QR code and QR amount display
-            const qrImg = document.getElementById('vietQrImg');
-            const qrTien = document.getElementById('qrSoTien');
-            if (qrTien) qrTien.innerText = soTienThanhToan.toLocaleString('vi-VN') + ' đ';
-            if (qrImg) {
-                qrImg.src = `https://img.vietqr.io/image/MB-036987654321-compact2.png?amount=${Math.round(soTienThanhToan)}&addInfo=DH%20DIENTU`;
-            }
-            if (window.animateCartBadge) window.animateCartBadge();
+            document.getElementById('giamGia').innerText = data.giam.toLocaleString('vi-VN') + ' đ';
+            document.getElementById('thanhToan').innerText = (tongTien - data.giam).toLocaleString('vi-VN') + ' đ';
         }
+    }
+
+    document.getElementById('btnApDung').addEventListener('click', () => {
+        const ma = document.getElementById('maVoucher').value;
+        applyVoucher(ma);
+    });
+
+    // Bắt sự kiện khi click vào nút "Dùng mã" của voucher gợi ý
+    document.querySelectorAll('.btn-chon-voucher').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const code = btn.getAttribute('data-code');
+            document.getElementById('maVoucher').value = code;
+            applyVoucher(code);
+        });
     });
 </script>
 }

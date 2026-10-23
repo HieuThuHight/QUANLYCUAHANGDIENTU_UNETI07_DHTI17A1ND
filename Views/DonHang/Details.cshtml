@@ -1,46 +1,422 @@
 ﻿@model QuanLyCuaHangDienTu.Models.Entities.DonHang
-@{ ViewData["Title"] = "Chi tiết đơn hàng"; Layout = "_Layout"; }
+@using QuanLyCuaHangDienTu.Helpers
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng #" + Model.MaDonHang;
+    Layout = "_Layout";
 
-<h2>Đơn hàng #@Model.MaDonHang</h2>
+    // Cấu hình Liobank chuẩn BIN 963369 từ appsettings.json
+    var bin = Configuration["VietQRSettings:Bin"] ?? "963369";
+    var bankName = Configuration["VietQRSettings:BankName"] ?? "Liobank";
+    var stk = Configuration["VietQRSettings:AccountNo"] ?? "0386694605";
+    var tenChuTk = Configuration["VietQRSettings:AccountName"] ?? "VUONG QUANG DAT";
+    var noiDungChuyenKhoan = $"DH{Model.MaDonHang}";
+    var soTienLong = Convert.ToInt64(Model.TongTien);
+    var isChoXacNhan = (Model.TrangThai == "ChoXacNhan");
 
-<div class="row">
-    <div class="col-md-6">
-        <p><b>Ngày đặt:</b> @Model.NgayDat.ToString("dd/MM/yyyy HH:mm")</p>
-        <p><b>Địa chỉ giao:</b> @Model.DiaChiGiaoHang</p>
-        <p><b>Trạng thái:</b> <span class="badge bg-info">@Model.TrangThai</span></p>
-        @if (Model.Voucher != null)
+    // Sinh chuẩn chuỗi EMVCo Napas247 cho Liobank BIN 963369
+    var emvcoPayload = VietQRHelper.GeneratePayload(bin, stk, soTienLong, noiDungChuyenKhoan);
+    var qrUrl = $"https://quickchart.io/qr?text={Uri.EscapeDataString(emvcoPayload)}&size=300&margin=1";
+
+    // Kiểm tra điều kiện cho phép hủy đơn (Hiếu cập nhật)
+    var soNgayDaDat = (DateTime.Now - Model.NgayDat).TotalDays;
+    bool duocPhepHuy = (Model.TrangThai == "ChoXacNhan" || Model.TrangThai == "DaXacNhan") 
+                       && soNgayDaDat <= 7 
+                       && Model.TrangThaiHuy != "DaHuy";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2><i class="bi bi-receipt"></i> Đơn hàng #@Model.MaDonHang</h2>
+    <span id="badgeTrangThai" class="badge @(Model.TrangThai switch {
+        "ChoXacNhan" => "bg-warning text-dark",
+        "DaXacNhan" => "bg-info",
+        "DangGiao" => "bg-primary",
+        "DaHoanThanh" => "bg-success",
+        "DaHuy" => "bg-danger",
+        _ => "bg-secondary"
+    }) fs-6">
+        @Model.TrangThai
+    </span>
+</div>
+
+@* HIỂN THỊ THÔNG BÁO THÀNH CÔNG / LỖI *@
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+@* HIỂN THỊ LÝ DO HỦY NẾU CÓ *@
+@if (!string.IsNullOrEmpty(Model.TrangThaiHuy))
+{
+    <div class="alert alert-danger mt-3">
+        <h6 class="fw-bold mb-1">❌ Đơn hàng đã bị hủy</h6>
+        @if (!string.IsNullOrEmpty(Model.LyDoHuy))
         {
-            <p><b>Voucher:</b> @Model.Voucher.MaCode</p>
+            <div><strong>Lý do:</strong> @Model.LyDoHuy</div>
         }
-        <p><b>Ghi chú:</b> @Model.GhiChu</p>
+        @if (Model.NgayYeuCauHuy.HasValue)
+        {
+            <small class="text-muted">Thời gian hủy: @Model.NgayYeuCauHuy.Value.ToString("dd/MM/yyyy HH:mm")</small>
+        }
+    </div>
+}
+
+<!-- Alert thông báo thanh toán tự động -->
+<div id="alertThanhToanThanhCong" class="alert alert-success d-none align-items-center shadow-sm" role="alert">
+    <i class="bi bi-check-circle-fill fs-4 me-2"></i>
+    <div>
+        <strong>🎉 Ngân hàng đã ghi nhận chuyển khoản thành công!</strong> Đơn hàng đã được hệ thống tự động xác nhận và chuyển sang trạng thái <b>Đã xác nhận</b>.
     </div>
 </div>
 
-<h4>Chi tiết sản phẩm</h4>
-<table class="table table-bordered">
-    <thead><tr><th>Sản phẩm</th><th>Số lượng</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead>
-    <tbody>
-        @foreach (var ct in Model.ChiTietDonHangs)
-        {
-            <tr>
-                <td>@ct.SanPham?.TenSanPham</td>
-                <td>@ct.SoLuong</td>
-                <td>@ct.DonGia.ToString("N0") đ</td>
-                <td>@ct.ThanhTien.ToString("N0") đ</td>
-            </tr>
-        }
-    </tbody>
-    <tfoot>
-        <tr><th colspan="3" class="text-end">Giảm giá:</th><th class="text-success">-@Model.GiamGia.ToString("N0") đ</th></tr>
-        <tr><th colspan="3" class="text-end">Tổng thanh toán:</th><th class="text-danger">@Model.TongTien.ToString("N0") đ</th></tr>
-    </tfoot>
-</table>
+<div class="row g-4 mb-4">
+    <!-- Cột thông tin đơn hàng -->
+    <div class="col-lg-7">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-light fw-bold text-primary">
+                <i class="bi bi-info-circle-fill me-1"></i> Thông tin đơn hàng
+            </div>
+            <div class="card-body">
+                <div class="row mb-2">
+                    <div class="col-sm-4 text-muted">Mã đơn hàng:</div>
+                    <div class="col-sm-8 fw-bold">#@Model.MaDonHang</div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-sm-4 text-muted">Ngày đặt:</div>
+                    <div class="col-sm-8 fw-semibold">@Model.NgayDat.ToString("dd/MM/yyyy HH:mm")</div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-sm-4 text-muted">Địa chỉ nhận hàng:</div>
+                    <div class="col-sm-8">@Model.DiaChiGiaoHang</div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-sm-4 text-muted">Trạng thái:</div>
+                    <div class="col-sm-8" id="textTrangThai"><span class="badge bg-info text-dark">@Model.TrangThai</span></div>
+                </div>
+                @if (Model.Voucher != null)
+                {
+                    <div class="row mb-2">
+                        <div class="col-sm-4 text-muted">Voucher đã dùng:</div>
+                        <div class="col-sm-8">
+                            <span class="badge bg-success">@Model.Voucher.MaCode</span> 
+                            <span class="text-success ms-1">(-@Model.GiamGia.ToString("N0") đ)</span>
+                        </div>
+                    </div>
+                }
+                <div class="row mb-2">
+                    <div class="col-sm-4 text-muted">Ghi chú đơn hàng:</div>
+                    <div class="col-sm-8 fst-italic">@(string.IsNullOrWhiteSpace(Model.GhiChu) ? "Không có" : Model.GhiChu)</div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-sm-4 text-muted">Tổng thanh toán:</div>
+                    <div class="col-sm-8 text-danger fs-5 fw-bold">@Model.TongTien.ToString("N0") đ</div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<div class="mt-3">
-    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
-    <a asp-controller="Export" asp-action="PdfHoaDon" asp-route-id="@Model.MaDonHang" class="btn btn-outline-danger" target="_blank">Xuất hóa đơn PDF</a>
+    <!-- Cột mã QR thanh toán động -->
+    <div class="col-lg-5">
+        <div class="card shadow-sm border-primary h-100" id="cardVietQR">
+            @if (isChoXacNhan)
+            {
+                <div class="card-header bg-primary text-white fw-bold text-center">
+                    <i class="bi bi-qr-code-scan me-1"></i> THANH TOÁN VIETQR NAPAS247
+                </div>
+                <div class="card-body text-center p-3">
+                    <div class="mb-2">
+                        <img src="@qrUrl" alt="VietQR Thanh Toán Đơn Hàng #@Model.MaDonHang" class="img-fluid rounded border shadow-sm p-2 bg-white" style="max-height: 270px;" />
+                    </div>
+                    
+                    <div class="bg-light p-2 rounded text-start small mb-2 border">
+                        <div class="d-flex justify-content-between py-1 border-bottom">
+                            <span class="text-muted">Ngân hàng:</span>
+                            <span class="fw-bold text-primary">@bankName</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center py-1 border-bottom">
+                            <span class="text-muted">Số tài khoản:</span>
+                            <div>
+                                <span class="fw-bold text-danger me-1">@stk</span>
+                                <button class="btn btn-sm btn-outline-secondary py-0 px-1" onclick="navigator.clipboard.writeText('@stk'); alert('Đã sao chép STK!');" title="Sao chép STK">📋</button>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between py-1 border-bottom">
+                            <span class="text-muted">Chủ tài khoản:</span>
+                            <span class="fw-bold">@tenChuTk</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center py-1 border-bottom">
+                            <span class="text-muted">Số tiền:</span>
+                            <div>
+                                <span class="fw-bold text-danger me-1">@Model.TongTien.ToString("N0") đ</span>
+                                <button class="btn btn-sm btn-outline-secondary py-0 px-1" onclick="navigator.clipboard.writeText('@soTienLong'); alert('Đã sao chép số tiền!');" title="Sao chép tiền">📋</button>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center py-1">
+                            <span class="text-muted">Nội dung CK:</span>
+                            <div>
+                                <span class="fw-bold text-success me-1">@noiDungChuyenKhoan</span>
+                                <button class="btn btn-sm btn-outline-secondary py-0 px-1" onclick="navigator.clipboard.writeText('@noiDungChuyenKhoan'); alert('Đã sao chép nội dung CK!');" title="Sao chép nội dung">📋</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trạng thái chờ Webhook / Polling tự động -->
+                    <div id="paymentStatusBox" class="p-2 mb-2 bg-warning-subtle text-warning-emphasis border border-warning rounded small text-center">
+                        <div class="spinner-grow spinner-grow-sm text-warning me-1" role="status"></div>
+                        <span id="txtWaiting">Đang chờ ngân hàng báo có... (Tự động duyệt)</span>
+                    </div>
+
+                    <!-- Nút kích hoạt xác nhận chuyển khoản / test nhanh Webhook -->
+                    <button id="btnXacNhanThanhToan" type="button" class="btn btn-success btn-sm w-100 fw-bold shadow-sm">
+                        <i class="bi bi-shield-check"></i> Tôi đã chuyển khoản xong (Test tự động xác nhận)
+                    </button>
+                    <small class="text-muted d-block mt-1" style="font-size: 11px;">
+                        Hệ thống tự động đồng bộ Webhook biến động số dư và chuyển trạng thái đơn.
+                    </small>
+                </div>
+            }
+            else
+            {
+                <div class="card-header bg-success text-white fw-bold text-center">
+                    <i class="bi bi-check-circle-fill me-1"></i> THANH TOÁN THÀNH CÔNG
+                </div>
+                <div class="card-body text-center p-4 d-flex flex-column justify-content-center align-items-center">
+                    <div class="text-success mb-3" style="font-size: 3rem;">
+                        <i class="bi bi-patch-check-fill"></i>
+                    </div>
+                    <h5 class="text-success fw-bold">ĐÃ XÁC NHẬN THANH TOÁN</h5>
+                    <p class="text-muted small mb-3">
+                        Giao dịch chuyển khoản qua tài khoản Liobank/OCB đã hoàn tất. Đơn hàng đang được chuẩn bị để giao đến bạn!
+                    </p>
+                    <div class="badge bg-success-subtle text-success border border-success p-2">
+                        Mã đơn: #@Model.MaDonHang • Số tiền: @Model.TongTien.ToString("N0") đ
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@if (Model.TrangThai == "DangGiao")
+{
+    <div class="alert alert-primary shadow-sm d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4 p-3 border-primary">
+        <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-truck display-6 text-primary"></i>
+            <div>
+                <h5 class="fw-bold mb-1 text-primary">🚚 Đơn hàng đang trên đường giao đến bạn!</h5>
+                <p class="mb-0 text-muted small">
+                    Shipper đang vận chuyển gói hàng. Khi nhận được hàng nguyên vẹn, bạn vui lòng nhấn nút xác nhận bên cạnh.
+                </p>
+            </div>
+        </div>
+        <button type="button" class="btn btn-success btn-lg fw-bold px-4 py-2 shadow-sm" onclick="xacNhanDaNhanHangDetail()">
+            <i class="bi bi-check2-circle fs-5 me-1"></i> Đã nhận được hàng
+        </button>
+    </div>
+}
+
+<h4 class="mb-3"><i class="bi bi-box-seam"></i> Chi tiết sản phẩm</h4>
+<div class="table-responsive shadow-sm rounded mb-4">
+    <table class="table table-bordered table-hover align-middle mb-0">
+        <thead class="table-light">
+            <tr>
+                <th>Sản phẩm</th>
+                <th class="text-center" style="width: 120px;">Số lượng</th>
+                <th class="text-end" style="width: 180px;">Đơn giá</th>
+                <th class="text-end" style="width: 200px;">Thành tiền</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var ct in Model.ChiTietDonHangs)
+            {
+                <tr>
+                    <td class="fw-semibold">@ct.SanPham?.TenSanPham</td>
+                    <td class="text-center">@ct.SoLuong</td>
+                    <td class="text-end">@ct.DonGia.ToString("N0") đ</td>
+                    <td class="text-end fw-bold">@ct.ThanhTien.ToString("N0") đ</td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            @if (Model.GiamGia > 0)
+            {
+                <tr>
+                    <th colspan="3" class="text-end text-muted">Giảm giá voucher:</th>
+                    <th class="text-end text-success">-@Model.GiamGia.ToString("N0") đ</th>
+                </tr>
+            }
+            <tr class="table-light">
+                <th colspan="3" class="text-end fs-6">Tổng thanh toán:</th>
+                <th class="text-end text-danger fs-5">@Model.TongTien.ToString("N0") đ</th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+<div class="d-flex gap-2 mb-4 flex-wrap">
+    <a asp-action="Index" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Quay lại danh sách đơn hàng
+    </a>
+        @if (Model.TrangThai == "DangGiao")
+    {
+        <button type="button" class="btn btn-success" onclick="xacNhanDaNhanHangDetail()">
+            <i class="bi bi-check2-circle"></i> Đã nhận được hàng
+        </button>
+    }
+    <a asp-controller="Export" asp-action="PdfHoaDon" asp-route-id="@Model.MaDonHang" class="btn btn-outline-danger" target="_blank">
+        <i class="bi bi-file-earmark-pdf"></i> Xuất hóa đơn PDF
+    </a>
     @if (Model.TrangThai == "DaHoanThanh")
     {
-        <a asp-controller="HoanHang" asp-action="YeuCau" asp-route-maDonHang="@Model.MaDonHang" class="btn btn-warning">Yêu cầu hoàn hàng</a>
+        <a asp-controller="HoanHang" asp-action="YeuCau" asp-route-maDonHang="@Model.MaDonHang" class="btn btn-warning">
+            <i class="bi bi-arrow-counterclockwise"></i> Yêu cầu hoàn hàng
+        </a>
+    }
+    @if (duocPhepHuy)
+    {
+        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalHuyDonDetail">
+            <i class="bi bi-x-circle"></i> Hủy đơn hàng này
+        </button>
     }
 </div>
+
+@* MODAL NHẬP LÝ DO HỦY (CỦA HIẾU) *@
+<div class="modal fade" id="modalHuyDonDetail" tabindex="-1">
+    <div class="modal-dialog">
+        <form asp-action="HuyDon" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="MaDonHang" value="@Model.MaDonHang" />
+            
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Xác nhận hủy đơn hàng #@Model.MaDonHang</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-danger fw-bold">Lưu ý: Đơn hàng sẽ bị hủy ngay lập tức và không thể khôi phục!</p>
+                    <label class="form-label">Lý do hủy <span class="text-danger">*</span></label>
+                    <textarea name="LyDoHuy" class="form-control" rows="3" required placeholder="Nhập lý do bạn muốn hủy đơn..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-danger">Xác nhận Hủy</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    async function xacNhanDaNhanHangDetail() {
+        if (!confirm('Bạn xác nhận đã nhận được đầy đủ hàng và sản phẩm nguyên vẹn?')) return;
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+        const formData = new FormData();
+        formData.append('id', @Model.MaDonHang);
+        if (token) formData.append('__RequestVerificationToken', token);
+
+        try {
+            const res = await fetch('/DonHang/XacNhanDaNhanHang', { method: 'POST', body: formData });
+            const data = await res.json();
+            alert(data.message);
+            if (data.success) location.reload();
+        } catch (e) {
+            alert('Có lỗi xảy ra, vui lòng thử lại.');
+        }
+    }
+</script>
+@if (isChoXacNhan)
+{
+<script>
+    const maDonHang = @Model.MaDonHang;
+    let pollInterval = null;
+
+    // 1. Polling tự động kiểm tra trạng thái mỗi 3 giây
+    function startPolling() {
+        pollInterval = setInterval(async () => {
+            try {
+                const res = await fetch(`/DonHang/KiemTraTrangThai?id=${maDonHang}`);
+                const data = await res.json();
+                if (data.success && data.daXacNhan) {
+                    clearInterval(pollInterval);
+                    onThanhToanThanhCong();
+                }
+            } catch (err) {
+                console.error("Lỗi polling trạng thái:", err);
+            }
+        }, 3000);
+    }
+
+    // 2. Xử lý khi xác nhận thanh toán thành công
+    function onThanhToanThanhCong() {
+        const alertBox = document.getElementById('alertThanhToanThanhCong');
+        if (alertBox) {
+            alertBox.classList.remove('d-none');
+            alertBox.classList.add('d-flex');
+        }
+        const badge = document.getElementById('badgeTrangThai');
+        if (badge) {
+            badge.className = 'badge bg-info fs-6';
+            badge.innerText = 'DaXacNhan';
+        }
+        const textTrangThai = document.getElementById('textTrangThai');
+        if (textTrangThai) {
+            textTrangThai.innerHTML = '<span class="badge bg-info text-dark">DaXacNhan</span>';
+        }
+        const cardQR = document.getElementById('cardVietQR');
+        if (cardQR) {
+            cardQR.innerHTML = `
+                <div class="card-header bg-success text-white fw-bold text-center">
+                    <i class="bi bi-check-circle-fill me-1"></i> THANH TOÁN THÀNH CÔNG
+                </div>
+                <div class="card-body text-center p-4 d-flex flex-column justify-content-center align-items-center">
+                    <div class="text-success mb-3" style="font-size: 3rem;">
+                        <i class="bi bi-patch-check-fill"></i>
+                    </div>
+                    <h5 class="text-success fw-bold">ĐÃ XÁC NHẬN THANH TOÁN</h5>
+                    <p class="text-muted small mb-3">
+                        Giao dịch chuyển khoản qua tài khoản Liobank/OCB đã hoàn tất. Đơn hàng đang được chuẩn bị để giao đến bạn!
+                    </p>
+                    <div class="badge bg-success-subtle text-success border border-success p-2">
+                        Mã đơn: #${maDonHang} • Đã tự động cập nhật & trừ tồn kho
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    // 3. Nút bấm xác nhận thanh toán (Test mô phỏng Webhook ngân hàng bắn về)
+    const btnXacNhan = document.getElementById('btnXacNhanThanhToan');
+    if (btnXacNhan) {
+        btnXacNhan.addEventListener('click', async () => {
+            btnXacNhan.disabled = true;
+            btnXacNhan.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Đang xử lý giao dịch...';
+            try {
+                const res = await fetch(`/DonHang/XacNhanThanhToanTuDong?id=${maDonHang}`, {
+                    method: 'POST'
+                });
+                const data = await res.json();
+                if (data.success) {
+                    clearInterval(pollInterval);
+                    onThanhToanThanhCong();
+                } else {
+                    alert(data.message || 'Có lỗi xảy ra khi xác nhận giao dịch.');
+                    btnXacNhan.disabled = false;
+                    btnXacNhan.innerHTML = '<i class="bi bi-shield-check"></i> Tôi đã chuyển khoản xong (Test tự động xác nhận)';
+                }
+            } catch (err) {
+                alert('Lỗi kết nối máy chủ: ' + err);
+                btnXacNhan.disabled = false;
+                btnXacNhan.innerHTML = '<i class="bi bi-shield-check"></i> Tôi đã chuyển khoản xong (Test tự động xác nhận)';
+            }
+        });
+    }
+
+    startPolling();
+</script>
+}
+}

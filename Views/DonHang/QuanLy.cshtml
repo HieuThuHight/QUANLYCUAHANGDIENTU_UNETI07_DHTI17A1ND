@@ -1,4 +1,4 @@
-﻿@model QuanLyCuaHangDienTu.Helpers.PaginatedList<QuanLyCuaHangDienTu.Models.Entities.DonHang>
+@model QuanLyCuaHangDienTu.Helpers.PaginatedList<QuanLyCuaHangDienTu.Models.Entities.DonHang>
 @{
     ViewData["Title"] = "Quản lý đơn hàng";
     Layout = "_AdminLayout";
@@ -29,10 +29,6 @@
             <label class="form-label">Từ ngày</label>
             <input name="tuNgay" value="@ViewBag.TuNgay" type="date" class="form-control" />
         </div>
-        @* <div class="col-md-2">
-            <label class="form-label">Đến ngày</label>
-            <input name="denNgay" value="@ViewBag.DenNgay" type="date" class="form-control" />
-        </div> *@
         <div class="col-md-3">
             <button type="submit" class="btn btn-primary">Tìm kiếm</button>
             <a asp-action="QuanLy" class="btn btn-secondary">Xóa lọc</a>
@@ -41,6 +37,7 @@
 </form>
 
 @* ================= BẢNG DANH SÁCH ================= *@
+<div id="liveOrderAlert"></div>
 <table class="table table-bordered table-hover align-middle">
     <thead>
         <tr>
@@ -55,26 +52,48 @@
     <tbody>
     @foreach (var dh in Model)
     {
-        <tr>
+        <tr id="row-dh-@dh.MaDonHang" data-id="@dh.MaDonHang" data-trangthai="@dh.TrangThai">
             <td>#@dh.MaDonHang</td>
             <td>@dh.KhachHang?.HoTen</td>
             <td>@dh.NgayDat.ToString("dd/MM/yyyy HH:mm")</td>
             <td>@dh.TongTien.ToString("N0") đ</td>
-            <td>@dh.TrangThai</td>
-            <td>
+            <td class="col-trangthai">
+                @switch (dh.TrangThai)
+                {
+                    case "ChoXacNhan":
+                        <span class="badge bg-warning text-dark">Chờ xác nhận</span>
+                        break;
+                    case "DaXacNhan":
+                        <span class="badge bg-info text-dark">Đã xác nhận</span>
+                        break;
+                    case "DangGiao":
+                        <span class="badge bg-primary">Đang giao</span>
+                        break;
+                    case "DaHoanThanh":
+                        <span class="badge bg-success">Đã hoàn thành</span>
+                        break;
+                    case "DaHuy":
+                        <span class="badge bg-danger">Đã hủy</span>
+                        break;
+                    default:
+                        <span class="badge bg-secondary">@dh.TrangThai</span>
+                        break;
+                }
+            </td>
+            <td class="col-thaotac">
                 <a asp-action="ChiTietAdmin" asp-route-id="@dh.MaDonHang" class="btn btn-sm btn-info">Chi tiết</a>
 
                 @if (dh.TrangThai == "ChoXacNhan")
                 {
-                    <button class="btn btn-sm btn-primary btn-chuyen-trang-thai" data-id="@dh.MaDonHang" data-trangthai="DaXacNhan">Xác nhận</button>
+                    <button type="button" class="btn btn-sm btn-primary btn-chuyen-trang-thai" data-id="@dh.MaDonHang" data-trangthai="DaXacNhan">Xác nhận</button>
                 }
                 else if (dh.TrangThai == "DaXacNhan")
                 {
-                    <button class="btn btn-sm btn-primary btn-chuyen-trang-thai" data-id="@dh.MaDonHang" data-trangthai="DangGiao">Giao hàng</button>
+                    <button type="button" class="btn btn-sm btn-primary btn-chuyen-trang-thai" data-id="@dh.MaDonHang" data-trangthai="DangGiao">Giao hàng</button>
                 }
                 else if (dh.TrangThai == "DangGiao")
                 {
-                    <button class="btn btn-sm btn-success btn-chuyen-trang-thai" data-id="@dh.MaDonHang" data-trangthai="DaHoanThanh">Hoàn thành</button>
+                    <button type="button" class="btn btn-sm btn-success btn-chuyen-trang-thai" data-id="@dh.MaDonHang" data-trangthai="DaHoanThanh">Hoàn thành</button>
                 }
             </td>
         </tr>
@@ -82,7 +101,7 @@
     </tbody>
 </table>
 
-@* ================= PHÂN TRANG (Nếu có) ================= *@
+@* ================= PHÂN TRANG ================= *@
 @if (Model.TotalPages > 1)
 {
     <nav>
@@ -101,24 +120,117 @@
 
 @section Scripts {
     <script>
-        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+        document.addEventListener('DOMContentLoaded', function () {
+            const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+            const token = tokenInput ? tokenInput.value : '';
 
-        document.querySelectorAll('.btn-chuyen-trang-thai').forEach(btn => {
-            btn.addEventListener('click', async function () {
-                if (!confirm('Xác nhận chuyển trạng thái đơn hàng?')) return;
-                
-                const body = new URLSearchParams({
-                    id: this.dataset.id,
-                    trangThai: this.dataset.trangthai,
-                    __RequestVerificationToken: token
+            // 1. Xử lý nút bấm chuyển trạng thái của Admin
+            function bindStatusButtons() {
+                document.querySelectorAll('.btn-chuyen-trang-thai').forEach(btn => {
+                    btn.onclick = async function () {
+                        const targetStatus = this.dataset.trangthai;
+                        let actionName = 'chuyển trạng thái đơn hàng';
+                        if (targetStatus === 'DaXacNhan') actionName = 'xác nhận đơn hàng';
+                        else if (targetStatus === 'DangGiao') actionName = 'bắt đầu giao hàng';
+                        else if (targetStatus === 'DaHoanThanh') actionName = 'hoàn thành đơn hàng';
+
+                        if (!confirm(`Bạn có chắc chắn muốn ${actionName}?`)) return;
+
+                        const body = new URLSearchParams({
+                            id: this.dataset.id,
+                            trangThai: targetStatus,
+                            __RequestVerificationToken: token
+                        });
+
+                        try {
+                            const res = await fetch('/DonHang/ChuyenTrangThai', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                body: body
+                            });
+                            const data = await res.json();
+                            alert(data.message);
+                            if (data.success) {
+                                location.reload();
+                            }
+                        } catch (err) {
+                            console.error(err);
+                            alert('Có lỗi xảy ra khi chuyển trạng thái.');
+                        }
+                    };
                 });
-                
-                const res = await fetch('/DonHang/ChuyenTrangThai', { method: 'POST', body });
-                const data = await res.json();
-                
-                alert(data.message);
-                if (data.success) location.reload();
-            });
+            }
+
+            bindStatusButtons();
+
+            // 2. Live Polling tự động đồng bộ khi khách hàng xác nhận nhận hàng
+            const rowEls = document.querySelectorAll('tr[data-id]');
+            const idList = Array.from(rowEls).map(r => r.dataset.id).filter(Boolean);
+
+            if (idList.length > 0) {
+                const idsParam = idList.join(',');
+                setInterval(async () => {
+                    try {
+                        const res = await fetch('/DonHang/KiemTraNhieuTrangThai?ids=' + encodeURIComponent(idsParam));
+                        const json = await res.json();
+                        if (json.success && json.data) {
+                            json.data.forEach(item => {
+                                const row = document.getElementById('row-dh-' + item.id);
+                                if (!row) return;
+
+                                const oldStatus = row.dataset.trangthai;
+                                if (oldStatus !== item.trangThai) {
+                                    row.dataset.trangthai = item.trangThai;
+                                    const colTrangThai = row.querySelector('.col-trangthai');
+                                    const colThaoTac = row.querySelector('.col-thaotac');
+
+                                    // Cập nhật Badge
+                                    let badgeHtml = '<span class="badge bg-secondary">' + item.trangThai + '</span>';
+                                    if (item.trangThai === 'DaHoanThanh') {
+                                        badgeHtml = '<span class="badge bg-success">Đã hoàn thành</span>';
+                                    } else if (item.trangThai === 'DangGiao') {
+                                        badgeHtml = '<span class="badge bg-primary">Đang giao</span>';
+                                    } else if (item.trangThai === 'DaXacNhan') {
+                                        badgeHtml = '<span class="badge bg-info text-dark">Đã xác nhận</span>';
+                                    } else if (item.trangThai === 'DaHuy') {
+                                        badgeHtml = '<span class="badge bg-danger">Đã hủy</span>';
+                                    }
+                                    if (colTrangThai) colTrangThai.innerHTML = badgeHtml;
+
+                                    // Cập nhật nút thao tác
+                                    if (colThaoTac) {
+                                        if (item.trangThai === 'DaHoanThanh' || item.trangThai === 'DaHuy') {
+                                            colThaoTac.innerHTML = '<a href="/DonHang/ChiTietAdmin/' + item.id + '" class="btn btn-sm btn-info">Chi tiết</a>';
+                                        } else if (item.trangThai === 'DangGiao') {
+                                            colThaoTac.innerHTML = '<a href="/DonHang/ChiTietAdmin/' + item.id + '" class="btn btn-sm btn-info me-1">Chi tiết</a>' +
+                                                '<button type="button" class="btn btn-sm btn-success btn-chuyen-trang-thai" data-id="' + item.id + '" data-trangthai="DaHoanThanh">Hoàn thành</button>';
+                                            bindStatusButtons();
+                                        }
+                                    }
+
+                                    // Hiệu ứng đổi màu dòng và hiển thị thông báo
+                                    row.style.transition = 'background-color 0.5s ease';
+                                    row.style.backgroundColor = '#d1e7dd';
+                                    setTimeout(() => { row.style.backgroundColor = ''; }, 3000);
+
+                                    const alertDiv = document.getElementById('liveOrderAlert');
+                                    if (alertDiv) {
+                                        const statusText = item.trangThai === 'DaHoanThanh' ? 'Đã hoàn thành (Khách hàng đã nhận hàng)' : item.trangThai;
+                                        alertDiv.innerHTML =
+                                            '<div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">' +
+                                            '<i class="bi bi-bell-fill me-2"></i>' +
+                                            '<strong>Đồng bộ tự động:</strong> Đơn hàng <strong>#' + item.id + '</strong> vừa chuyển sang trạng thái <strong>' + statusText + '</strong>!' +
+                                            '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                                            '</div>';
+                                    }
+                                }
+                            });
+                        }
+                    } catch (err) {
+                        console.warn("Lỗi kiểm tra trạng thái:", err);
+                    }
+                }, 4000);
+            }
         });
     </script>
 }

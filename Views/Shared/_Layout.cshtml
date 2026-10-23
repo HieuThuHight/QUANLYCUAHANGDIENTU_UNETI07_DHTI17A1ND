@@ -86,7 +86,7 @@
                         {
                             <li class="nav-item me-lg-2">
                                 <a class="btn btn-warning btn-sm text-dark fw-bold px-3 shadow-sm d-flex align-items-center gap-1" asp-controller="ThongKe" asp-action="Index">
-                                    <i class="bi bi-speedometer2"></i> Trang Quản Trị
+                                    <i class="bi bi-speedometer2"></i> Trang quản trị viên
                                 </a>
                             </li>
                         }
@@ -103,6 +103,14 @@
                                     <li>
                                         <a class="dropdown-item py-2" asp-controller="HoSo" asp-action="HoSo">
                                             <i class="bi bi-person me-2 text-primary"></i> Thông tin cá nhân
+                                        </a>
+                                    </li>
+                                }
+                                @if (laAdmin)
+                                {
+                                    <li>
+                                        <a class="dropdown-item py-2 fw-semibold text-primary" asp-controller="ThongKe" asp-action="Index">
+                                            <i class="bi bi-speedometer2 me-2"></i> Trang quản trị viên
                                         </a>
                                     </li>
                                 }

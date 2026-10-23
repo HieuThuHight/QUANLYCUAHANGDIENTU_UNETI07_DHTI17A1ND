@@ -25,6 +25,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Content Update="Views\**\*.cshtml" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <Folder Include="Views\KhachHang\" />
 	  <Folder Include="Views\DonHang\" />
 	  <Folder Include="Views\GioHang\" />

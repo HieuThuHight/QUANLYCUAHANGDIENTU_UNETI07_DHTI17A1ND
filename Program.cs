@@ -1,4 +1,4 @@
-// Họ và tên: Đỗ Văn Hiếu
+﻿// Họ và tên: Đỗ Văn Hiếu
 // Mã sinh viên: 23203100018
 // Nội dung thực hiện: Cau hinh Program.cs
 
@@ -6,7 +6,15 @@ using Microsoft.EntityFrameworkCore;
 using QuanLyCuaHangDienTu.Data;
 using QuanLyCuaHangDienTu.Services;
 
-var builder = WebApplication.CreateBuilder(args);
+var contentRoot = Directory.Exists(Path.Combine(AppContext.BaseDirectory, "Views"))
+    ? AppContext.BaseDirectory
+    : Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", ".."));
+
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+    Args = args,
+    ContentRootPath = contentRoot
+});
 
 // Ensure WebRootPath is always found whether run via VS, dotnet run, or bin output
 if (string.IsNullOrEmpty(builder.Environment.WebRootPath) || !Directory.Exists(builder.Environment.WebRootPath))

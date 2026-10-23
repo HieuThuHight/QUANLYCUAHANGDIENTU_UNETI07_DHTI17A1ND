@@ -343,5 +343,142 @@ namespace QuanLyCuaHangDienTu.Controllers
                 return Json(new { success = false, message = "Có lỗi xảy ra." });
             }
         }
+
+        // ===== KHÁCH HÀNG XÁC NHẬN ĐÃ NHẬN HÀNG (KHI ĐANG GIAO) =====
+        [HttpPost]
+        [KhachHangAuthorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> XacNhanDaNhanHang(int id)
+        {
+            var maKH = HttpContext.Session.GetInt32("MaKhachHang");
+            if (maKH == null) return Json(new { success = false, message = "Vui lòng đăng nhập tài khoản." });
+
+            var dh = await _context.DonHangs
+                .Include(d => d.KhachHang)
+                .FirstOrDefaultAsync(d => d.MaDonHang == id && d.MaKhachHang == maKH.Value);
+
+            if (dh == null) return Json(new { success = false, message = "Không tìm thấy đơn hàng." });
+
+            if (dh.TrangThai != "DangGiao")
+            {
+                return Json(new { success = false, message = $"Đơn hàng không ở trạng thái đang giao (hiện tại: {dh.TrangThai})." });
+            }
+
+            dh.TrangThai = "DaHoanThanh";
+            await _context.SaveChangesAsync();
+
+            if (dh.KhachHang != null)
+            {
+                _ = Task.Run(async () =>
+                {
+                    try { await _emailService.GuiEmailCapNhatTrangThai(dh, dh.KhachHang.Email, "DaHoanThanh"); }
+                    catch (Exception ex) { _logger.LogError(ex, "Lỗi gửi email xác nhận đã nhận hàng"); }
+                });
+            }
+
+            return Json(new { success = true, message = "Xác nhận đã nhận hàng thành công! Đơn hàng đã chuyển sang hoàn thành." });
+        }
+
+        // ===== ADMIN POLLING KIỂM TRA NHIỀU ĐƠN HÀNG CÙNG LÚC =====
+        [HttpGet]
+        public async Task<IActionResult> KiemTraNhieuTrangThai(string ids)
+        {
+            if (string.IsNullOrEmpty(ids)) return Json(new { success = true, data = Array.Empty<object>() });
+
+            var idList = ids.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                            .Select(s => int.TryParse(s.Trim(), out var v) ? v : 0)
+                            .Where(v => v > 0)
+                            .ToList();
+
+            var donHangs = await _context.DonHangs
+                .Where(d => idList.Contains(d.MaDonHang))
+                .Select(d => new { id = d.MaDonHang, trangThai = d.TrangThai, trangThaiHuy = d.TrangThaiHuy })
+                .ToListAsync();
+
+            return Json(new { success = true, data = donHangs });
+        }
+
+        // ===== KIỂM TRA TRẠNG THÁI THANH TOÁN (AJAX POLLING) =====
+        [HttpGet]
+        public async Task<IActionResult> KiemTraTrangThai(int id)
+        {
+            var dh = await _context.DonHangs.FindAsync(id);
+            if (dh == null) return Json(new { success = false, message = "Không tìm thấy đơn hàng." });
+            return Json(new { 
+                success = true, 
+                trangThai = dh.TrangThai, 
+                daXacNhan = (dh.TrangThai != "ChoXacNhan" && dh.TrangThai != "DaHuy") 
+            });
+        }
+
+        // ===== XÁC NHẬN THANH TOÁN TỰ ĐỘNG / GIẢ LẬP BANK WEBHOOK =====
+        [HttpPost]
+        public async Task<IActionResult> XacNhanThanhToanTuDong(int id)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+            try
+            {
+                var dh = await _context.DonHangs
+                    .Include(d => d.ChiTietDonHangs)
+                    .Include(d => d.KhachHang)
+                    .Include(d => d.Voucher)
+                    .FirstOrDefaultAsync(d => d.MaDonHang == id);
+
+                if (dh == null)
+                {
+                    await transaction.RollbackAsync();
+                    return Json(new { success = false, message = "Không tìm thấy đơn hàng." });
+                }
+
+                if (dh.TrangThai != "ChoXacNhan")
+                {
+                    await transaction.RollbackAsync();
+                    return Json(new { success = false, message = $"Đơn hàng hiện đang ở trạng thái '{dh.TrangThai}'." });
+                }
+
+                // Trừ tồn kho sản phẩm
+                foreach (var ct in dh.ChiTietDonHangs)
+                {
+                    var sp = await _context.SanPhams.FindAsync(ct.MaSanPham);
+                    if (sp == null || sp.SoLuongTon < ct.SoLuong)
+                    {
+                        await transaction.RollbackAsync();
+                        return Json(new { success = false, message = $"Sản phẩm '{sp?.TenSanPham}' không đủ tồn kho." });
+                    }
+                    sp.SoLuongTon -= ct.SoLuong;
+                }
+
+                // Tăng lượt dùng voucher
+                if (dh.Voucher != null)
+                {
+                    if (dh.Voucher.DaSuDung < dh.Voucher.SoLuong)
+                    {
+                        dh.Voucher.DaSuDung++;
+                    }
+                }
+
+                dh.TrangThai = "DaXacNhan";
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                // Gửi email thông báo
+                if (dh.KhachHang != null)
+                {
+                    _ = Task.Run(async () =>
+                    {
+                        try { await _emailService.GuiEmailCapNhatTrangThai(dh, dh.KhachHang.Email, "DaXacNhan"); }
+                        catch (Exception ex) { _logger.LogError(ex, "Lỗi gửi email xác nhận thanh toán"); }
+                    });
+                }
+
+                return Json(new { success = true, message = "Thanh toán thành công! Hệ thống đã tự động xác nhận đơn hàng." });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Lỗi xác nhận thanh toán tự động.");
+                return Json(new { success = false, message = "Lỗi xử lý giao dịch: " + ex.Message });
+            }
+        }
     }
 }

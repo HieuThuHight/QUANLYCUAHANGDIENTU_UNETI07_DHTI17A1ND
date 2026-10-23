@@ -156,9 +156,14 @@ namespace QuanLyCuaHangDienTu.Controllers
                 return View(model);
             }
 
-            if (!tk.TrangThai)
+            // Kiểm tra trạng thái Khách hàng liên kết
+            var kh = await _context.KhachHangs.AsNoTracking()
+                .FirstOrDefaultAsync(k => k.MaTaiKhoan == tk.MaTaiKhoan);
+
+            if (!tk.TrangThai || (kh != null && !kh.TrangThai))
             {
-                ModelState.AddModelError("", "Tài khoản đã bị khóa.");
+                ViewBag.TaiKhoanBiKhoa = true;
+                ModelState.AddModelError("", "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ với bộ phận Chăm sóc khách hàng (CSKH) để được hỗ trợ xác minh và mở khóa tài khoản.");
                 return View(model);
             }
 
@@ -166,12 +171,9 @@ namespace QuanLyCuaHangDienTu.Controllers
             HttpContext.Session.SetString("HoTen", tk.HoTen);
             HttpContext.Session.SetString("VaiTro", tk.VaiTro);
 
-            if (tk.VaiTro == "KhachHang")
+            if (tk.VaiTro == "KhachHang" && kh != null)
             {
-                var kh = await _context.KhachHangs.AsNoTracking()
-                    .FirstOrDefaultAsync(k => k.MaTaiKhoan == tk.MaTaiKhoan);
-                if (kh != null)
-                    HttpContext.Session.SetInt32("MaKhachHang", kh.MaKhachHang);
+                HttpContext.Session.SetInt32("MaKhachHang", kh.MaKhachHang);
             }
 
             _logger.LogInformation("User {TenDangNhap} đăng nhập", tk.TenDangNhap);

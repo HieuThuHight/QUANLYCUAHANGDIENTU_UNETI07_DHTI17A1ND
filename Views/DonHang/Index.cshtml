@@ -44,7 +44,13 @@ else
                 <td>@Html.Raw(RenderTrangThai(dh.TrangThai))</td>
                 <td>@Html.Raw(RenderTrangThaiHuy(dh.TrangThaiHuy))</td>
                 <td>
-                    <a asp-action="Details" asp-route-id="@dh.MaDonHang" class="btn btn-sm btn-info">Chi tiết</a>
+                                        <a asp-action="Details" asp-route-id="@dh.MaDonHang" class="btn btn-sm btn-info">Chi tiết</a>
+                    @if (dh.TrangThai == "DangGiao")
+                    {
+                        <button type="button" class="btn btn-sm btn-success btn-da-nhan-hang" data-id="@dh.MaDonHang">
+                            <i class="bi bi-check2-circle"></i> Đã nhận hàng
+                        </button>
+                    }
 
                     @{
                         var soNgay = (DateTime.Now - dh.NgayDat).TotalDays;
@@ -121,6 +127,27 @@ else
 @section Scripts {
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+                        // Xử lý khách xác nhận đã nhận hàng
+            document.querySelectorAll('.btn-da-nhan-hang').forEach(btn => {
+                btn.addEventListener('click', async function () {
+                    if (!confirm('Bạn xác nhận đã nhận được đầy đủ hàng cho đơn này?')) return;
+                    const id = this.dataset.id;
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                    const formData = new FormData();
+                    formData.append('id', id);
+                    if (token) formData.append('__RequestVerificationToken', token);
+
+                    try {
+                        const res = await fetch('/DonHang/XacNhanDaNhanHang', { method: 'POST', body: formData });
+                        const data = await res.json();
+                        alert(data.message);
+                        if (data.success) location.reload();
+                    } catch (e) {
+                        alert('Có lỗi xảy ra, vui lòng thử lại.');
+                    }
+                });
+            });
+
             document.querySelectorAll('.btn-huy').forEach(btn => {
                 btn.addEventListener('click', function () {
                     document.getElementById('huyMaDonHang').value = this.dataset.id;

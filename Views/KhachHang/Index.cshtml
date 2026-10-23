@@ -55,11 +55,21 @@
             <td>@kh.Email</td>
             <td>@kh.DiaChi</td>
             <td>@kh.NgayDangKy.ToString("dd/MM/yyyy")</td>
-            <td>@(kh.TrangThai ? "Hoạt động" : "Khóa")</td>
             <td>
-                <a asp-action="Details" asp-route-id="@kh.MaKhachHang" class="btn btn-sm btn-info">Xem</a>
-                <button class="btn btn-sm btn-warning btn-toggle" data-id="@kh.MaKhachHang">
-                    @(kh.TrangThai ? "Khóa" : "Mở khóa")
+                @if (kh.TrangThai)
+                {
+                    <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Hoạt động</span>
+                }
+                else
+                {
+                    <span class="badge bg-danger"><i class="bi bi-lock-fill me-1"></i>Đã khóa</span>
+                }
+            </td>
+            <td>
+                <a asp-action="Details" asp-route-id="@kh.MaKhachHang" class="btn btn-sm btn-info text-white"><i class="bi bi-eye"></i> Xem</a>
+                <button class="btn btn-sm @(kh.TrangThai ? "btn-outline-danger" : "btn-outline-success") btn-toggle" data-id="@kh.MaKhachHang">
+                    <i class="bi @(kh.TrangThai ? "bi-lock" : "bi-unlock")"></i>
+                    @(kh.TrangThai ? "Khóa TK" : "Mở khóa")
                 </button>
             </td>
         </tr>

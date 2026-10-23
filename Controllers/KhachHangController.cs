@@ -86,9 +86,14 @@ namespace QuanLyCuaHangDienTu.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ToggleTrangThai(int id)
         {
-            var kh = await _context.KhachHangs.FindAsync(id);
-            if (kh == null) return Json(new { success = false });
+            var kh = await _context.KhachHangs.Include(k => k.TaiKhoan).FirstOrDefaultAsync(k => k.MaKhachHang == id);
+            if (kh == null) return Json(new { success = false, message = "Không tìm thấy khách hàng." });
+            
             kh.TrangThai = !kh.TrangThai;
+            if (kh.TaiKhoan != null)
+            {
+                kh.TaiKhoan.TrangThai = kh.TrangThai; // Đồng bộ khóa cả tài khoản đăng nhập
+            }
             await _context.SaveChangesAsync();
             return Json(new { success = true, trangThai = kh.TrangThai });
         }

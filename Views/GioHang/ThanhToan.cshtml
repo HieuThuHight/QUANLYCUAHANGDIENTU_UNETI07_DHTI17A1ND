@@ -41,23 +41,89 @@
             @Html.AntiForgeryToken()
             <div asp-validation-summary="All" class="text-danger"></div>
             <div class="mb-3">
-                <label asp-for="DiaChiGiaoHang" class="form-label"></label>
+                <label asp-for="DiaChiGiaoHang" class="form-label fw-bold"></label>
                 <input asp-for="DiaChiGiaoHang" class="form-control" />
                 <span asp-validation-for="DiaChiGiaoHang" class="text-danger"></span>
             </div>
             <div class="mb-3">
-                <label asp-for="GhiChu" class="form-label"></label>
-                <textarea asp-for="GhiChu" class="form-control" rows="2"></textarea>
+                <label asp-for="GhiChu" class="form-label fw-bold"></label>
+                <textarea asp-for="GhiChu" class="form-control" rows="2" placeholder="Ghi chú về đơn hàng, thời gian giao hàng..."></textarea>
             </div>
+
+            <!-- Khối Voucher & Gợi ý Voucher -->
             <div class="mb-3">
-                <label asp-for="MaCodeVoucher" class="form-label"></label>
-                <div class="input-group">
-                    <input asp-for="MaCodeVoucher" id="maVoucher" class="form-control" />
-                    <button type="button" id="btnApDung" class="btn btn-outline-primary">Áp dụng</button>
+                <label asp-for="MaCodeVoucher" class="form-label fw-bold"><i class="bi bi-ticket-perforated text-danger"></i> Mã Voucher giảm giá:</label>
+                <div class="input-group mb-2">
+                    <input asp-for="MaCodeVoucher" id="maVoucher" class="form-control text-uppercase fw-bold" placeholder="Nhập mã hoặc chọn bên dưới" />
+                    <button type="button" id="btnApDung" class="btn btn-outline-primary fw-semibold">Áp dụng</button>
                 </div>
-                <small id="voucherMsg" class="text-muted"></small>
+                <div id="voucherMsg" class="small fw-semibold mb-2"></div>
+
+                @if (Model.Vouchers != null && Model.Vouchers.Any())
+                {
+                    <div class="card bg-light border p-2 mb-2 shadow-sm rounded">
+                        <div class="fw-bold small text-primary mb-2">
+                            <i class="bi bi-gift-fill text-warning me-1"></i> GỢI Ý MÃ GIẢM GIÁ CHO BẠN:
+                        </div>
+                        <div class="d-flex flex-column gap-2" style="max-height: 220px; overflow-y: auto;">
+                            @foreach (var v in Model.Vouchers)
+                            {
+                                var duDieuKien = Model.TongTien >= v.DonHangToiThieu;
+                                <div class="p-2 border rounded bg-white d-flex justify-content-between align-items-center @(!duDieuKien ? "opacity-75" : "")">
+                                    <div>
+                                        <div class="fw-bold">
+                                            <span class="badge bg-warning text-dark me-1">@v.MaCode</span>
+                                            <span class="small text-dark">@v.TenVoucher</span>
+                                        </div>
+                                        <div class="small text-muted" style="font-size: 11px;">
+                                            @(v.LoaiGiamGia == "PhanTram" ? $"Giảm {v.GiaTriGiam:N0}%" : $"Giảm {v.GiaTriGiam:N0} đ")
+                                            • Đơn tối thiểu: <b>@v.DonHangToiThieu.ToString("N0") đ</b>
+                                        </div>
+                                        @if (!duDieuKien)
+                                        {
+                                            <span class="badge bg-secondary" style="font-size: 10px;">Cần thêm @((v.DonHangToiThieu - Model.TongTien).ToString("N0")) đ</span>
+                                        }
+                                    </div>
+                                    <div>
+                                        @if (duDieuKien)
+                                        {
+                                            <button type="button" class="btn btn-sm btn-outline-success py-1 px-2 fw-semibold btn-chon-voucher" data-code="@v.MaCode">
+                                                Dùng mã
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button type="button" class="btn btn-sm btn-light py-1 px-2 text-muted" disabled style="font-size: 11px;">
+                                                Chưa đủ
+                                            </button>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
             </div>
-            <button type="submit" class="btn btn-success w-100">Đặt hàng</button>
+
+            <div class="mb-3 p-3 bg-light border rounded">
+                <label class="form-label fw-bold text-primary mb-2"><i class="bi bi-wallet2"></i> Phương thức thanh toán:</label>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="PhuongThucThanhToan" id="ptQR" value="VietQR" checked>
+                    <label class="form-check-label fw-semibold" for="ptQR">
+                        Chuyển khoản VietQR Napas247 (Liobank / OCB)
+                    </label>
+                    <div class="text-muted small">Sau khi bấm "Đặt hàng", hệ thống sẽ hiển thị mã VietQR động để bạn quét app ngân hàng thanh toán ngay.</div>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="PhuongThucThanhToan" id="ptCOD" value="COD">
+                    <label class="form-check-label fw-semibold" for="ptCOD">
+                        Thanh toán khi nhận hàng (COD)
+                    </label>
+                    <div class="text-muted small">Thanh toán tiền mặt cho nhân viên giao hàng.</div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100 py-2 fw-bold">Xác nhận đặt hàng</button>
         </form>
     </div>
 </div>
@@ -65,21 +131,40 @@
 @section Scripts {
 <script>
     const tongTien = @Model.TongTien;
-    document.getElementById('btnApDung').addEventListener('click', async () => {
-        const ma = document.getElementById('maVoucher').value;
+
+    async function applyVoucher(ma) {
+        if (!ma || !ma.trim()) {
+            document.getElementById('voucherMsg').innerText = 'Vui lòng nhập hoặc chọn mã voucher.';
+            document.getElementById('voucherMsg').className = 'text-danger small fw-semibold';
+            return;
+        }
         const res = await fetch('/GioHang/KiemTraVoucher', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ maCode: ma, tongTien: tongTien })
+            body: JSON.stringify({ maCode: ma.trim(), tongTien: tongTien })
         });
         const data = await res.json();
         const msgEl = document.getElementById('voucherMsg');
         msgEl.innerText = data.message;
-        msgEl.className = data.success ? 'text-success' : 'text-danger';
+        msgEl.className = data.success ? 'text-success small fw-semibold' : 'text-danger small fw-semibold';
         if (data.success) {
             document.getElementById('giamGia').innerText = data.giam.toLocaleString('vi-VN') + ' đ';
             document.getElementById('thanhToan').innerText = (tongTien - data.giam).toLocaleString('vi-VN') + ' đ';
         }
+    }
+
+    document.getElementById('btnApDung').addEventListener('click', () => {
+        const ma = document.getElementById('maVoucher').value;
+        applyVoucher(ma);
+    });
+
+    // Bắt sự kiện khi click vào nút "Dùng mã" của voucher gợi ý
+    document.querySelectorAll('.btn-chon-voucher').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const code = btn.getAttribute('data-code');
+            document.getElementById('maVoucher').value = code;
+            applyVoucher(code);
+        });
     });
 </script>
 }

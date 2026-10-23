@@ -1,3 +1,4 @@
+using QuanLyCuaHangDienTu.Helpers;
 ﻿// Họ và tên: Lưu Đức Huy
 // Mã sinh viên: 23274800002
 // Nội dung thực hiện: Gui email xac nhan, cap nhat trang thai, hoan hang, dat lai mat khau
@@ -63,6 +64,12 @@ namespace QuanLyCuaHangDienTu.Services
         // ============== ĐẶT HÀNG THÀNH CÔNG ==============
         public async Task GuiEmailDatHangThanhCong(DonHang dh, string emailKhach)
         {
+            var bin = _config["VietQRSettings:Bin"] ?? "963369";
+            var stk = _config["VietQRSettings:AccountNo"] ?? "0386694605";
+            var tenChuTk = _config["VietQRSettings:AccountName"] ?? "VUONG QUANG DAT";
+            var payload = VietQRHelper.GeneratePayload(bin, stk, Convert.ToInt64(dh.TongTien), $"DH{dh.MaDonHang}");
+            var qrUrl = $"https://quickchart.io/qr?text={Uri.EscapeDataString(payload)}&size=260&margin=1";
+
             var body = $@"
                 <div style='font-family:Arial;max-width:600px;margin:auto;border:1px solid #ddd;border-radius:8px;overflow:hidden'>
                     <div style='background:#0d6efd;color:white;padding:20px;text-align:center'>
@@ -77,6 +84,11 @@ namespace QuanLyCuaHangDienTu.Services
                             <tr><td style='padding:8px;border-bottom:1px solid #eee'><b>Địa chỉ giao:</b></td><td style='padding:8px;border-bottom:1px solid #eee'>{dh.DiaChiGiaoHang}</td></tr>
                             <tr><td style='padding:8px;background:#fff3cd'><b>Tổng thanh toán:</b></td><td style='padding:8px;background:#fff3cd;color:red;font-size:18px'><b>{dh.TongTien:N0} đ</b></td></tr>
                         </table>
+                        <div style='text-align:center;margin:15px 0;background:#f8f9fa;padding:15px;border-radius:6px;border:1px dashed #0d6efd'>
+                            <p style='margin:0 0 8px 0;color:#0d6efd;font-weight:bold'>Quét mã VietQR chuyển khoản (Liobank / OCB):</p>
+                            <img src='{qrUrl}' alt='VietQR' style='max-width:240px;border-radius:6px;border:1px solid #ddd' />
+                            <p style='font-size:12px;color:#555;margin:8px 0 0 0'>STK: <b>{stk}</b> - Chủ TK: <b>{tenChuTk}</b> - ND: <b>DH{dh.MaDonHang}</b></p>
+                        </div>
                         <p>Trân trọng,<br><b>Cửa hàng điện tử UNETI</b></p>
                     </div>
                 </div>";

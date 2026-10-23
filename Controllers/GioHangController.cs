@@ -1,4 +1,4 @@
-// Họ và tên: Vương Quang Đạt
+﻿// Họ và tên: Vương Quang Đạt
 // Mã sinh viên: 23203100036
 // Nội dung thực hiện: Gio hang, dat hang - bat buoc dang nhap
 
@@ -156,6 +156,20 @@ namespace QuanLyCuaHangDienTu.Controllers
             }
             var maKH = maKHNullable.Value;
 
+            // Kiểm tra khách hàng tồn tại và tài khoản đang hoạt động
+            var khachHang = await _context.KhachHangs.Include(k => k.TaiKhoan).FirstOrDefaultAsync(k => k.MaKhachHang == maKH);
+            if (khachHang == null || !khachHang.TrangThai || khachHang.TaiKhoan == null || !khachHang.TaiKhoan.TrangThai)
+            {
+                ModelState.AddModelError("", "Tài khoản khách hàng không tồn tại hoặc đã bị khóa.");
+                return await ReloadCheckoutView(model, cart);
+            }
+
+            if (string.IsNullOrWhiteSpace(model.DiaChiGiaoHang))
+            {
+                ModelState.AddModelError("DiaChiGiaoHang", "Địa chỉ giao hàng không được để trống.");
+                return await ReloadCheckoutView(model, cart);
+            }
+
             foreach (var item in cart)
             {
                 var sp = await _context.SanPhams.FindAsync(item.MaSanPham);
@@ -164,11 +178,18 @@ namespace QuanLyCuaHangDienTu.Controllers
                     ModelState.AddModelError("", $"Sản phẩm '{item.TenSanPham}' không khả dụng.");
                     return await ReloadCheckoutView(model, cart);
                 }
+                if (item.SoLuong <= 0)
+                {
+                    ModelState.AddModelError("", $"Số lượng đặt của '{item.TenSanPham}' phải lớn hơn 0.");
+                    return await ReloadCheckoutView(model, cart);
+                }
                 if (item.SoLuong > sp.SoLuongTon)
                 {
                     ModelState.AddModelError("", $"Sản phẩm '{item.TenSanPham}' chỉ còn {sp.SoLuongTon}.");
                     return await ReloadCheckoutView(model, cart);
                 }
+                // Đảm bảo đơn giá lấy từ sản phẩm tại thời điểm đặt hàng (không cho người dùng tự nhập)
+                item.DonGia = sp.DonGia;
             }
 
             var tongTien = cart.Sum(c => c.ThanhTien);
@@ -221,8 +242,8 @@ namespace QuanLyCuaHangDienTu.Controllers
             }
 
             HttpContext.Session.Remove(CART_KEY);
-            TempData["Success"] = $"Đặt hàng thành công! Mã đơn: #{donHang.MaDonHang}";
-            return RedirectToAction("Index", "DonHang");
+            TempData["Success"] = $"Đặt hàng thành công! Vui lòng quét mã VietQR bên dưới để thanh toán đơn hàng #{donHang.MaDonHang}.";
+            return RedirectToAction("Details", "DonHang", new { id = donHang.MaDonHang });
         }
 
         private async Task<IActionResult> ReloadCheckoutView(CheckoutViewModel model, List<CartItemViewModel> cart)

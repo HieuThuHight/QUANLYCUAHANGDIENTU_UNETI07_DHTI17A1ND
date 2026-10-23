@@ -1,82 +1,124 @@
 ﻿@model QuanLyCuaHangDienTu.Helpers.PaginatedList<QuanLyCuaHangDienTu.Models.Entities.DonHang>
-@{ ViewData["Title"] = "Quản lý đơn hàng"; Layout = "_AdminLayout"; }
+@{
+    ViewData["Title"] = "Quản lý đơn hàng";
+    Layout = "_AdminLayout";
+}
 @Html.AntiForgeryToken()
+
 <h2>Quản lý đơn hàng</h2>
 
-<form method="get" class="row g-2 mb-3">
-    <div class="col-md-3"><input name="keyword" value="@ViewBag.Keyword" class="form-control" placeholder="Tên khách hàng" /></div>
-    <div class="col-md-2">
-        <select name="trangThai" class="form-select">
-            <option value="">-- Trạng thái --</option>
-            <option value="ChoXacNhan" selected="@(ViewBag.TrangThai == "ChoXacNhan")">Chờ xác nhận</option>
-            <option value="DaXacNhan" selected="@(ViewBag.TrangThai == "DaXacNhan")">Đã xác nhận</option>
-            <option value="DangGiao" selected="@(ViewBag.TrangThai == "DangGiao")">Đang giao</option>
-            <option value="DaHoanThanh" selected="@(ViewBag.TrangThai == "DaHoanThanh")">Đã hoàn thành</option>
-            <option value="DaHuy" selected="@(ViewBag.TrangThai == "DaHuy")">Đã hủy</option>
-        </select>
+@* ================= FORM BỘ LỌC ĐÃ ĐƯỢC KHÔI PHỤC ================= *@
+<form asp-action="QuanLy" method="get" class="card card-body bg-light mb-3">
+    <div class="row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label">Từ khóa (Tên KH)</label>
+            <input name="keyword" value="@ViewBag.Keyword" class="form-control" placeholder="Nhập tên khách hàng..." />
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Trạng thái</label>
+            <select name="trangThai" class="form-select">
+                <option value="">-- Tất cả --</option>
+                <option value="ChoXacNhan" selected="@(ViewBag.TrangThai == "ChoXacNhan")">Chờ xác nhận</option>
+                <option value="DaXacNhan" selected="@(ViewBag.TrangThai == "DaXacNhan")">Đã xác nhận</option>
+                <option value="DangGiao" selected="@(ViewBag.TrangThai == "DangGiao")">Đang giao</option>
+                <option value="DaHoanThanh" selected="@(ViewBag.TrangThai == "DaHoanThanh")">Đã hoàn thành</option>
+                <option value="DaHuy" selected="@(ViewBag.TrangThai == "DaHuy")">Đã hủy</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Từ ngày</label>
+            <input name="tuNgay" value="@ViewBag.TuNgay" type="date" class="form-control" />
+        </div>
+        @* <div class="col-md-2">
+            <label class="form-label">Đến ngày</label>
+            <input name="denNgay" value="@ViewBag.DenNgay" type="date" class="form-control" />
+        </div> *@
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+            <a asp-action="QuanLy" class="btn btn-secondary">Xóa lọc</a>
+        </div>
     </div>
-    <div class="col-md-2"><input name="tuNgay" value="@ViewBag.TuNgay" class="form-control" type="date" /></div>
-    <div class="col-md-2"><input name="denNgay" value="@ViewBag.DenNgay" class="form-control" type="date" /></div>
-    <div class="col-md-2"><button class="btn btn-primary w-100">Lọc</button></div>
 </form>
 
-<table class="table table-bordered table-hover">
-    <thead class="table-light">
-        <tr><th>Mã</th><th>Khách hàng</th><th>Ngày đặt</th><th>Tổng tiền</th><th>Trạng thái</th><th>Thao tác</th></tr>
+@* ================= BẢNG DANH SÁCH ================= *@
+<table class="table table-bordered table-hover align-middle">
+    <thead>
+        <tr>
+            <th>Mã</th>
+            <th>Khách hàng</th>
+            <th>Ngày đặt</th>
+            <th>Tổng tiền</th>
+            <th>Trạng thái</th>
+            <th>Thao tác</th>
+        </tr>
     </thead>
     <tbody>
-        @foreach (var dh in Model)
-        {
-            <tr>
-                <td>#@dh.MaDonHang</td>
-                <td>@dh.KhachHang?.HoTen</td>
-                <td>@dh.NgayDat.ToString("dd/MM/yyyy")</td>
-                <td class="text-danger">@dh.TongTien.ToString("N0") đ</td>
-                <td><span class="badge bg-info">@dh.TrangThai</span></td>
-                <td>
-                    <a asp-action="ChiTietAdmin" asp-route-id="@dh.MaDonHang" class="btn btn-sm btn-info">Chi tiết</a>
-                    @if (dh.TrangThai == "ChoXacNhan")
-                    {
-                        <button class="btn btn-sm btn-success btn-tt" data-id="@dh.MaDonHang" data-tt="DaXacNhan">Xác nhận</button>
-                    }
-                    @if (dh.TrangThai == "DaXacNhan")
-                    {
-                        <button class="btn btn-sm btn-primary btn-tt" data-id="@dh.MaDonHang" data-tt="DangGiao">Giao hàng</button>
-                    }
-                    @if (dh.TrangThai == "DangGiao")
-                    {
-                        <button class="btn btn-sm btn-success btn-tt" data-id="@dh.MaDonHang" data-tt="DaHoanThanh">Hoàn thành</button>
-                    }
-                </td>
-            </tr>
-        }
+    @foreach (var dh in Model)
+    {
+        <tr>
+            <td>#@dh.MaDonHang</td>
+            <td>@dh.KhachHang?.HoTen</td>
+            <td>@dh.NgayDat.ToString("dd/MM/yyyy HH:mm")</td>
+            <td>@dh.TongTien.ToString("N0") đ</td>
+            <td>@dh.TrangThai</td>
+            <td>
+                <a asp-action="ChiTietAdmin" asp-route-id="@dh.MaDonHang" class="btn btn-sm btn-info">Chi tiết</a>
+
+                @if (dh.TrangThai == "ChoXacNhan")
+                {
+                    <button class="btn btn-sm btn-primary btn-chuyen-trang-thai" data-id="@dh.MaDonHang" data-trangthai="DaXacNhan">Xác nhận</button>
+                }
+                else if (dh.TrangThai == "DaXacNhan")
+                {
+                    <button class="btn btn-sm btn-primary btn-chuyen-trang-thai" data-id="@dh.MaDonHang" data-trangthai="DangGiao">Giao hàng</button>
+                }
+                else if (dh.TrangThai == "DangGiao")
+                {
+                    <button class="btn btn-sm btn-success btn-chuyen-trang-thai" data-id="@dh.MaDonHang" data-trangthai="DaHoanThanh">Hoàn thành</button>
+                }
+            </td>
+        </tr>
+    }
     </tbody>
 </table>
 
-<partial name="_Pagination" model="Model" />
+@* ================= PHÂN TRANG (Nếu có) ================= *@
+@if (Model.TotalPages > 1)
+{
+    <nav>
+        <ul class="pagination">
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <li class="page-item @(Model.PageIndex == i ? "active" : "")">
+                    <a class="page-link" asp-action="QuanLy" asp-route-pageIndex="@i" 
+                       asp-route-keyword="@ViewBag.Keyword" asp-route-trangThai="@ViewBag.TrangThai" 
+                       asp-route-tuNgay="@ViewBag.TuNgay" asp-route-denNgay="@ViewBag.DenNgay">@i</a>
+                </li>
+            }
+        </ul>
+    </nav>
+}
 
 @section Scripts {
-<script>
-    document.querySelectorAll('.btn-tt').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            if (!confirm('Chuyển trạng thái?')) return;
-            
-            // Lấy token bảo mật
-            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
-            
-            const res = await fetch('/DonHang/ChuyenTrangThai', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/x-www-form-urlencoded' 
-                },
-                // Gửi kèm token trong body
-                body: `id=${btn.dataset.id}&trangThai=${btn.dataset.tt}&__RequestVerificationToken=${token}`
+    <script>
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+        document.querySelectorAll('.btn-chuyen-trang-thai').forEach(btn => {
+            btn.addEventListener('click', async function () {
+                if (!confirm('Xác nhận chuyển trạng thái đơn hàng?')) return;
+                
+                const body = new URLSearchParams({
+                    id: this.dataset.id,
+                    trangThai: this.dataset.trangthai,
+                    __RequestVerificationToken: token
+                });
+                
+                const res = await fetch('/DonHang/ChuyenTrangThai', { method: 'POST', body });
+                const data = await res.json();
+                
+                alert(data.message);
+                if (data.success) location.reload();
             });
-            
-            const data = await res.json();
-            alert(data.message);
-            if (data.success) location.reload();
         });
-    });
-</script>
+    </script>
 }

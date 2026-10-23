@@ -74,6 +74,9 @@ namespace QuanLyCuaHangDienTu.Migrations
                     b.Property<decimal>("GiamGia")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("LyDoHuy")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("MaKhachHang")
                         .HasColumnType("int");
 
@@ -83,6 +86,9 @@ namespace QuanLyCuaHangDienTu.Migrations
                     b.Property<DateTime>("NgayDat")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("NgayYeuCauHuy")
+                        .HasColumnType("datetime2");
+
                     b.Property<decimal>("TongTien")
                         .HasColumnType("decimal(18,2)");
 
@@ -90,6 +96,9 @@ namespace QuanLyCuaHangDienTu.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("TrangThaiHuy")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("MaDonHang");
 
@@ -177,6 +186,38 @@ namespace QuanLyCuaHangDienTu.Migrations
                         .IsUnique();
 
                     b.ToTable("LoaiSanPham");
+                });
+
+            modelBuilder.Entity("QuanLyCuaHangDienTu.Models.Entities.PasswordResetToken", b =>
+                {
+                    b.Property<int>("MaToken")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaToken"));
+
+                    b.Property<bool>("DaSuDung")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MaTaiKhoan")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("NgayHetHan")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("NgayTao")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("MaToken");
+
+                    b.HasIndex("MaTaiKhoan");
+
+                    b.ToTable("PasswordResetToken");
                 });
 
             modelBuilder.Entity("QuanLyCuaHangDienTu.Models.Entities.SanPham", b =>
@@ -417,6 +458,17 @@ namespace QuanLyCuaHangDienTu.Migrations
                         .WithOne("KhachHang")
                         .HasForeignKey("QuanLyCuaHangDienTu.Models.Entities.KhachHang", "MaTaiKhoan")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("TaiKhoan");
+                });
+
+            modelBuilder.Entity("QuanLyCuaHangDienTu.Models.Entities.PasswordResetToken", b =>
+                {
+                    b.HasOne("QuanLyCuaHangDienTu.Models.Entities.TaiKhoan", "TaiKhoan")
+                        .WithMany()
+                        .HasForeignKey("MaTaiKhoan")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("TaiKhoan");

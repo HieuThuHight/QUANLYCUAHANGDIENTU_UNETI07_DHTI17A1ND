@@ -1,6 +1,7 @@
 ﻿@model List<QuanLyCuaHangDienTu.Models.Entities.DonHang>
 @{
-    ViewData["Title"] = "Đơn hàng của tôi"; Layout = "_Layout";
+    ViewData["Title"] = "Đơn hàng của tôi";
+    Layout = "_Layout";
 }
 
 <h2>Đơn hàng của tôi</h2>
@@ -22,34 +23,111 @@
 }
 else
 {
-    <table class="table table-bordered">
+    <table class="table table-bordered align-middle">
         <thead>
-            <tr><th>Mã đơn</th><th>Ngày đặt</th><th>Địa chỉ</th><th>Tổng tiền</th><th>Trạng thái</th><th></th></tr>
+            <tr>
+                <th>Mã đơn</th>
+                <th>Ngày đặt</th>
+                <th>Tổng tiền</th>
+                <th>Trạng thái đơn</th>
+                <th>Trạng thái hủy</th>
+                <th>Thao tác</th>
+            </tr>
         </thead>
         <tbody>
-            @foreach (var dh in Model)
-            {
-                <tr>
-                    <td>#@dh.MaDonHang</td>
-                    <td>@dh.NgayDat.ToString("dd/MM/yyyy HH:mm")</td>
-                    <td>@dh.DiaChiGiaoHang</td>
-                    <td class="text-danger">@dh.TongTien.ToString("N0") đ</td>
-                    <td>
-                        <span class="badge bg-@(dh.TrangThai switch
-                              {
-                                  "ChoXacNhan" => "warning",
-                                  "DaXacNhan" => "info",
-                                  "DangGiao" => "primary",
-                                  "DaHoanThanh" => "success",
-                                  "DaHuy" => "secondary",
-                                  "YeuCauHoanHang" => "warning",
-                                  "DaHoanHang" => "success",
-                                  _ => "secondary"
-                              })">@dh.TrangThai</span>
-                    </td>
-                    <td><a asp-action="Details" asp-route-id="@dh.MaDonHang" class="btn btn-sm btn-info">Chi tiết</a></td>
-                </tr>
-            }
+        @foreach (var dh in Model)
+        {
+            <tr>
+                <td>#@dh.MaDonHang</td>
+                <td>@dh.NgayDat.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>@dh.TongTien.ToString("N0") đ</td>
+                <td>@Html.Raw(RenderTrangThai(dh.TrangThai))</td>
+                <td>@Html.Raw(RenderTrangThaiHuy(dh.TrangThaiHuy))</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@dh.MaDonHang" class="btn btn-sm btn-info">Chi tiết</a>
+
+                    @{
+                        var soNgay = (DateTime.Now - dh.NgayDat).TotalDays;
+                        bool coTheHuy = (dh.TrangThai == "ChoXacNhan" || dh.TrangThai == "DaXacNhan") 
+                                        && soNgay <= 7 
+                                        && dh.TrangThaiHuy != "DaHuy";
+                    }
+                    @if (coTheHuy)
+                    {
+                        <button class="btn btn-sm btn-danger btn-huy"
+                                data-id="@dh.MaDonHang"
+                                data-madon="#@dh.MaDonHang"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalHuyDon">
+                            Hủy đơn
+                        </button>
+                    }
+                </td>
+            </tr>
+        }
         </tbody>
     </table>
+}
+
+@* Modal hủy đơn *@
+<div class="modal fade" id="modalHuyDon" tabindex="-1">
+    <div class="modal-dialog">
+        <form asp-action="HuyDon" method="post" id="formHuyDon">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="MaDonHang" id="huyMaDonHang" />
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Hủy đơn hàng <span id="huyMaDonText"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label">Lý do hủy <span class="text-danger">*</span></label>
+                    <textarea name="LyDoHuy" id="LyDoHuy" class="form-control" rows="4"
+                              maxlength="500" required
+                              placeholder="VD: Tôi đổi ý không mua nữa / Đặt nhầm sản phẩm..."></textarea>
+                    <small class="text-muted">Tối đa 500 ký tự.</small>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-danger">Gửi yêu cầu hủy</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@functions {
+    string RenderTrangThai(string tt) => tt switch
+    {
+        "ChoXacNhan"     => "<span class='badge bg-warning text-dark'>Chờ xác nhận</span>",
+        "DaXacNhan"      => "<span class='badge bg-info'>Đã xác nhận</span>",
+        "DangGiao"       => "<span class='badge bg-primary'>Đang giao</span>",
+        "DaHoanThanh"    => "<span class='badge bg-success'>Hoàn thành</span>",
+        "DaHuy"          => "<span class='badge bg-danger'>Đã hủy</span>",
+        "YeuCauHoanHang" => "<span class='badge bg-secondary'>Yêu cầu hoàn hàng</span>",
+        "DaHoanHang"     => "<span class='badge bg-dark'>Đã hoàn hàng</span>",
+        _                => tt
+    };
+
+    string RenderTrangThaiHuy(string? tth) => tth switch
+    {
+        "ChoXacNhan" => "<span class='badge bg-warning text-dark'>Chờ admin duyệt hủy</span>",
+        "DaHuy"      => "<span class='badge bg-danger'>Đã duyệt hủy</span>",
+        "TuChoi"     => "<span class='badge bg-secondary'>Bị từ chối hủy</span>",
+        _            => ""
+    };
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll('.btn-huy').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    document.getElementById('huyMaDonHang').value = this.dataset.id;
+                    document.getElementById('huyMaDonText').innerText = this.dataset.madon;
+                    document.getElementById('LyDoHuy').value = '';
+                });
+            });
+        });
+    </script>
 }

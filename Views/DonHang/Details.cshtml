@@ -3,6 +3,32 @@
 
 <h2>Đơn hàng #@Model.MaDonHang</h2>
 
+@* HIỂN THỊ THÔNG BÁO THÀNH CÔNG / LỖI *@
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+@* HIỂN THỊ LÝ DO HỦY NẾU CÓ *@
+@if (!string.IsNullOrEmpty(Model.TrangThaiHuy))
+{
+    <div class="alert alert-danger mt-3">
+        <h6 class="fw-bold mb-1">❌ Đơn hàng đã bị hủy</h6>
+        @if (!string.IsNullOrEmpty(Model.LyDoHuy))
+        {
+            <div><strong>Lý do:</strong> @Model.LyDoHuy</div>
+        }
+        @if (Model.NgayYeuCauHuy.HasValue)
+        {
+            <small class="text-muted">Thời gian hủy: @Model.NgayYeuCauHuy.Value.ToString("dd/MM/yyyy HH:mm")</small>
+        }
+    </div>
+}
+
 <div class="row">
     <div class="col-md-6">
         <p><b>Ngày đặt:</b> @Model.NgayDat.ToString("dd/MM/yyyy HH:mm")</p>
@@ -39,8 +65,52 @@
 <div class="mt-3">
     <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
     <a asp-controller="Export" asp-action="PdfHoaDon" asp-route-id="@Model.MaDonHang" class="btn btn-outline-danger" target="_blank">Xuất hóa đơn PDF</a>
+    
     @if (Model.TrangThai == "DaHoanThanh")
     {
         <a asp-controller="HoanHang" asp-action="YeuCau" asp-route-maDonHang="@Model.MaDonHang" class="btn btn-warning">Yêu cầu hoàn hàng</a>
     }
+
+    @* KIỂM TRA ĐIỀU KIỆN ĐỂ HIỂN THỊ NÚT HỦY *@
+    @{
+        // Tính số ngày từ lúc đặt đến hiện tại
+        var soNgayDaDat = (DateTime.Now - Model.NgayDat).TotalDays;
+        // Chỉ cho hủy khi: Đang chờ xác nhận hoặc Đã xác nhận + Chưa quá 7 ngày + Chưa hủy
+        bool duocPhepHuy = (Model.TrangThai == "ChoXacNhan" || Model.TrangThai == "DaXacNhan") 
+                           && soNgayDaDat <= 7 
+                           && Model.TrangThaiHuy != "DaHuy";
+    }
+
+    @if (duocPhepHuy)
+    {
+        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalHuyDonDetail">
+            Hủy đơn hàng này
+        </button>
+    }
+</div>
+
+@* MODAL NHẬP LÝ DO HỦY *@
+<div class="modal fade" id="modalHuyDonDetail" tabindex="-1">
+    <div class="modal-dialog">
+        <form asp-action="HuyDon" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="MaDonHang" value="@Model.MaDonHang" />
+            
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Xác nhận hủy đơn hàng #@Model.MaDonHang</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-danger fw-bold">Lưu ý: Đơn hàng sẽ bị hủy ngay lập tức và không thể khôi phục!</p>
+                    <label class="form-label">Lý do hủy <span class="text-danger">*</span></label>
+                    <textarea name="LyDoHuy" class="form-control" rows="3" required placeholder="Nhập lý do bạn muốn hủy đơn..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-danger">Xác nhận Hủy</button>
+                </div>
+            </div>
+        </form>
+    </div>
 </div>

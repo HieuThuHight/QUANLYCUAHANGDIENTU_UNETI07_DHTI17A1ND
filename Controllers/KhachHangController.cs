@@ -8,6 +8,7 @@ using QuanLyCuaHangDienTu.Data;
 using QuanLyCuaHangDienTu.Filters;
 using QuanLyCuaHangDienTu.Helpers;
 using QuanLyCuaHangDienTu.Models.Entities;
+using QuanLyCuaHangDienTu.Models.ViewModels;
 
 namespace QuanLyCuaHangDienTu.Controllers
 {
@@ -18,15 +19,57 @@ namespace QuanLyCuaHangDienTu.Controllers
         private readonly AppDbContext _context;
         public KhachHangController(AppDbContext context) => _context = context;
 
-        public async Task<IActionResult> Index(string? keyword, int pageIndex = 1)
-        {
-            var query = _context.KhachHangs.Include(k => k.TaiKhoan).AsNoTracking().AsQueryable();
-            if (!string.IsNullOrWhiteSpace(keyword))
-                query = query.Where(k => k.HoTen.Contains(keyword) || k.SoDienThoai.Contains(keyword));
+        //public async Task<IActionResult> Index(string? keyword, int pageIndex = 1)
+        //{
+        //    var query = _context.KhachHangs.Include(k => k.TaiKhoan).AsNoTracking().AsQueryable();
+        //    if (!string.IsNullOrWhiteSpace(keyword))
+        //        query = query.Where(k => k.HoTen.Contains(keyword) || k.SoDienThoai.Contains(keyword));
 
-            ViewBag.Keyword = keyword;
-            var list = await PaginatedList<KhachHang>.CreateAsync(query.OrderBy(k => k.HoTen), pageIndex, 10);
-            return View(list);
+        //    ViewBag.Keyword = keyword;
+        //    var list = await PaginatedList<KhachHang>.CreateAsync(query.OrderBy(k => k.HoTen), pageIndex, 10);
+        //    return View(list);
+        //}
+        public async Task<IActionResult> Index(KhachHangFilterViewModel filter, int pageIndex = 1)
+        {
+            var query = _context.KhachHangs
+                .Include(k => k.TaiKhoan)
+                .AsNoTracking()
+                .AsQueryable();
+
+            // 1. Tìm kiếm gần đúng (Tên, SĐT, Email)
+            if (!string.IsNullOrWhiteSpace(filter.TuKhoa))
+            {
+                var keyword = filter.TuKhoa.Trim();
+                query = query.Where(k =>
+                    EF.Functions.Like(k.HoTen, $"%{keyword}%") ||
+                    EF.Functions.Like(k.SoDienThoai, $"%{keyword}%") ||
+                    (k.Email != null && EF.Functions.Like(k.Email, $"%{keyword}%"))
+                );
+            }
+
+            // 2. Lọc theo địa chỉ (gần đúng)
+            if (!string.IsNullOrWhiteSpace(filter.DiaChi))
+            {
+                var diaChi = filter.DiaChi.Trim();
+                query = query.Where(k => k.DiaChi != null && EF.Functions.Like(k.DiaChi, $"%{diaChi}%"));
+            }
+
+            // 3. Lọc theo khoảng ngày đăng ký
+            if (filter.TuNgayDangKy.HasValue)
+                query = query.Where(k => k.NgayDangKy >= filter.TuNgayDangKy.Value.Date);
+
+            if (filter.DenNgayDangKy.HasValue)
+            {
+                var denNgay = filter.DenNgayDangKy.Value.Date.AddDays(1);
+                query = query.Where(k => k.NgayDangKy < denNgay);
+            }
+
+            var list = await PaginatedList<KhachHang>.CreateAsync(
+                query.OrderBy(k => k.HoTen), pageIndex, 10);
+
+            filter.DanhSachKhachHang = list; // nếu dùng PaginatedList, cần điều chỉnh
+            ViewBag.Filter = filter;
+            return View(list); // Truyền thẳng PaginatedList ra View
         }
 
         public async Task<IActionResult> Details(int id)

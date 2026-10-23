@@ -19,6 +19,18 @@ namespace QuanLyCuaHangDienTu.Models.Entities
         [Display(Name = "Ngày đặt")]
         public DateTime NgayDat { get; set; } = DateTime.Now;
 
+        // DonHang.cs
+        [StringLength(500)]
+        [Display(Name = "Lý do hủy")]
+        public string? LyDoHuy { get; set; }
+
+        [StringLength(50)]
+        [Display(Name = "Trạng thái hủy")]
+        public string? TrangThaiHuy { get; set; }   // "ChoXacNhan", "DaHuy", "TuChoi"
+
+        [Display(Name = "Ngày yêu cầu hủy")]
+        public DateTime? NgayYeuCauHuy { get; set; }
+
         [Required(ErrorMessage = "Địa chỉ giao hàng không được để trống")]
         [StringLength(255)]
         [Display(Name = "Địa chỉ giao hàng")]

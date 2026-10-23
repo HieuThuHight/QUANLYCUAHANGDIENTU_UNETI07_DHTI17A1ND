@@ -3,6 +3,19 @@
 
 <h2>Đơn hàng #@Model.MaDonHang</h2>
 
+@* THÊM ĐOẠN NÀY ĐỂ HIỂN THỊ LÝ DO KHÁCH TỰ HỦY ĐƠN *@
+@if (Model.TrangThai == "DaHuy" && !string.IsNullOrEmpty(Model.LyDoHuy))
+{
+    <div class="alert alert-danger">
+        <h6 class="fw-bold mb-1">❌ Đơn hàng đã bị khách hàng tự hủy</h6>
+        <div><strong>Lý do:</strong> @Model.LyDoHuy</div>
+        @if (Model.NgayYeuCauHuy.HasValue)
+        {
+            <small class="text-muted">Thời gian hủy: @Model.NgayYeuCauHuy.Value.ToString("dd/MM/yyyy HH:mm")</small>
+        }
+    </div>
+}
+
 <div class="row">
     <div class="col-md-6">
         <div class="card mb-3">

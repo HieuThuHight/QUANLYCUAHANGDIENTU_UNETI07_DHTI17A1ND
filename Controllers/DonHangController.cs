@@ -407,7 +407,8 @@ namespace QuanLyCuaHangDienTu.Controllers
             return Json(new { 
                 success = true, 
                 trangThai = dh.TrangThai, 
-                daXacNhan = (dh.TrangThai != "ChoXacNhan" && dh.TrangThai != "DaHuy") 
+                daXacNhan = (dh.TrangThai == "DaXacNhan" || dh.TrangThai == "DangGiao" || dh.TrangThai == "DaHoanThanh"),
+                daHuy = (dh.TrangThai == "DaHuy" || dh.TrangThaiHuy == "DaHuy") 
             });
         }
 

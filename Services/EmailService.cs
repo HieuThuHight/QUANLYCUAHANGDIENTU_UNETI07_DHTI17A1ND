@@ -84,11 +84,16 @@ namespace QuanLyCuaHangDienTu.Services
                             <tr><td style='padding:8px;border-bottom:1px solid #eee'><b>Địa chỉ giao:</b></td><td style='padding:8px;border-bottom:1px solid #eee'>{dh.DiaChiGiaoHang}</td></tr>
                             <tr><td style='padding:8px;background:#fff3cd'><b>Tổng thanh toán:</b></td><td style='padding:8px;background:#fff3cd;color:red;font-size:18px'><b>{dh.TongTien:N0} đ</b></td></tr>
                         </table>
+                        {(dh.GhiChu != null && dh.GhiChu.Contains("COD") ? $@"
+                        <div style='text-align:center;margin:15px 0;background:#e7f5ff;padding:15px;border-radius:6px;border:1px solid #339af0'>
+                            <p style='margin:0 0 8px 0;color:#1864ab;font-weight:bold;font-size:16px'>💵 Phương thức: Thanh toán tiền mặt khi nhận hàng (COD)</p>
+                            <p style='margin:0;color:#495057;font-size:13px'>Quý khách vui lòng chuẩn bị số tiền <b>{dh.TongTien:N0} đ</b> để thanh toán cho nhân viên giao hàng khi nhận kiện hàng.</p>
+                        </div>" : $@"
                         <div style='text-align:center;margin:15px 0;background:#f8f9fa;padding:15px;border-radius:6px;border:1px dashed #0d6efd'>
                             <p style='margin:0 0 8px 0;color:#0d6efd;font-weight:bold'>Quét mã VietQR chuyển khoản (Liobank / OCB):</p>
                             <img src='{qrUrl}' alt='VietQR' style='max-width:240px;border-radius:6px;border:1px solid #ddd' />
                             <p style='font-size:12px;color:#555;margin:8px 0 0 0'>STK: <b>{stk}</b> - Chủ TK: <b>{tenChuTk}</b> - ND: <b>DH{dh.MaDonHang}</b></p>
-                        </div>
+                        </div>")}
                         <p>Trân trọng,<br><b>Cửa hàng điện tử UNETI</b></p>
                     </div>
                 </div>";

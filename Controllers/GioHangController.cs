@@ -209,12 +209,15 @@ namespace QuanLyCuaHangDienTu.Controllers
                 maVoucher = v?.MaVoucher;
             }
 
+            var phuongThuc = model.PhuongThucThanhToan == "COD" ? "COD" : "VietQR";
+            var ghiChuDayDu = $"[PTTT: {phuongThuc}]" + (string.IsNullOrWhiteSpace(model.GhiChu) ? "" : $" | {model.GhiChu.Trim()}");
+
             var donHang = new DonHang
             {
                 MaKhachHang = maKH,
                 NgayDat = DateTime.Now,
                 DiaChiGiaoHang = model.DiaChiGiaoHang,
-                GhiChu = model.GhiChu,
+                GhiChu = ghiChuDayDu,
                 TongTien = tongTien - giamGia,
                 GiamGia = giamGia,
                 MaVoucher = maVoucher,
@@ -242,7 +245,14 @@ namespace QuanLyCuaHangDienTu.Controllers
             }
 
             HttpContext.Session.Remove(CART_KEY);
-            TempData["Success"] = $"Đặt hàng thành công! Vui lòng quét mã VietQR bên dưới để thanh toán đơn hàng #{donHang.MaDonHang}.";
+            if (phuongThuc == "COD")
+            {
+                TempData["Success"] = $"Đặt hàng thành công! Mã đơn: #{donHang.MaDonHang}. Phương thức: Tiền mặt khi nhận hàng (COD).";
+            }
+            else
+            {
+                TempData["Success"] = $"Đặt hàng thành công! Vui lòng quét mã VietQR bên dưới để thanh toán đơn hàng #{donHang.MaDonHang}.";
+            }
             return RedirectToAction("Details", "DonHang", new { id = donHang.MaDonHang });
         }
 

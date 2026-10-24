@@ -24,7 +24,7 @@ namespace QuanLyCuaHangDienTu.Models.ViewModels
         public string? MaCodeVoucher { get; set; }
 
         [Display(Name = "Phương thức thanh toán")]
-        public string PhuongThucThanhToan { get; set; } = "COD";
+        public string PhuongThucThanhToan { get; set; } = "VietQR";
 
         public List<Voucher> Vouchers { get; set; } = new();
 

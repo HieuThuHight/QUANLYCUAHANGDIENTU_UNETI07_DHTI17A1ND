@@ -23,6 +23,9 @@ namespace QuanLyCuaHangDienTu.Models.ViewModels
         [Display(Name = "Mã voucher")]
         public string? MaCodeVoucher { get; set; }
 
+        [Display(Name = "Phương thức thanh toán")]
+        public string PhuongThucThanhToan { get; set; } = "VietQR";
+
         public List<Voucher> Vouchers { get; set; } = new();
 
         public decimal TongTien => Items.Sum(i => i.ThanhTien);

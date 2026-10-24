@@ -14,6 +14,7 @@
     var soTienLong = Convert.ToInt64(Model.TongTien);
     var isChoXacNhan = (Model.TrangThai == "ChoXacNhan");
     var isDaHuy = (Model.TrangThai == "DaHuy" || Model.TrangThaiHuy == "DaHuy");
+    var isCOD = (Model.GhiChu != null && Model.GhiChu.Contains("COD"));
 
     // Sinh chuẩn chuỗi EMVCo Napas247 cho Liobank BIN 963369
     var emvcoPayload = VietQRHelper.GeneratePayload(bin, stk, soTienLong, noiDungChuyenKhoan);
@@ -156,7 +157,43 @@
                     </div>
                 </div>
             }
-            else if (isChoXacNhan)
+                    else if (isCOD)
+        {
+            <div class="card shadow-sm border-info h-100">
+                <div class="card-header bg-info text-white fw-bold text-center">
+                    <i class="bi bi-cash-coin me-1"></i> THANH TOÁN KHI NHẬN HÀNG (COD)
+                </div>
+                <div class="card-body text-center p-4 d-flex flex-column justify-content-center align-items-center">
+                    <div class="text-info mb-3" style="font-size: 3.5rem;">
+                        <i class="bi bi-truck"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2">TIỀN MẶT KHI NHẬN HÀNG</h5>
+                    <p class="text-muted small mb-3">
+                        Đơn hàng của bạn đã được ghi nhận. Quý khách vui lòng chuẩn bị số tiền mặt tương ứng để thanh toán trực tiếp cho nhân viên giao hàng khi nhận kiện hàng.
+                    </p>
+                    <div class="bg-light border rounded p-3 w-100 text-start small mb-3">
+                        <div class="d-flex justify-content-between py-1 border-bottom">
+                            <span class="text-muted">Phương thức:</span>
+                            <span class="fw-bold text-primary">Thanh toán tiền mặt (COD)</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-1 border-bottom">
+                            <span class="text-muted">Số tiền cần thanh toán:</span>
+                            <span class="fw-bold text-danger fs-6">@Model.TongTien.ToString("N0") đ</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-1">
+                            <span class="text-muted">Trạng thái:</span>
+                            <span class="badge @(Model.TrangThai == "ChoXacNhan" ? "bg-warning text-dark" : "bg-success text-white")">
+                                @(Model.TrangThai == "ChoXacNhan" ? "Chờ cửa hàng xác nhận" : Model.TrangThai)
+                            </span>
+                        </div>
+                    </div>
+                    <div class="alert alert-info-subtle border border-info small text-start w-100 mb-0">
+                        <i class="bi bi-shield-check text-info me-1"></i> <strong>Chính sách:</strong> Quý khách được quyền đồng kiểm tra sản phẩm trước khi thanh toán tiền mặt cho shipper.
+                    </div>
+                </div>
+            </div>
+        }
+        else if (isChoXacNhan)
             {
                 <div class="card-header bg-primary text-white fw-bold text-center">
                     <i class="bi bi-qr-code-scan me-1"></i> THANH TOÁN VIETQR NAPAS247
@@ -363,7 +400,7 @@
         }
     }
 </script>
-@if (isChoXacNhan)
+@if (isChoXacNhan && !isCOD)
 {
 <script>
     const maDonHang = @Model.MaDonHang;

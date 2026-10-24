@@ -69,7 +69,9 @@ namespace QuanLyCuaHangDienTu.Data
                 new() { TenSanPham = "Samsung Galaxy Watch 6", MaLoai = loaiSPs[4].MaLoai, ThuongHieu = "Samsung", XuatXu = "Hàn Quốc", DonGia = 7990000, SoLuongTon = 35, ThoiGianBaoHanh = 12, HinhAnh = "/images/products/watch6.jpg", TrangThai = true },
                 new() { TenSanPham = "Garmin Venu 3", MaLoai = loaiSPs[4].MaLoai, ThuongHieu = "Garmin", XuatXu = "Mỹ", DonGia = 9990000, SoLuongTon = 25, ThoiGianBaoHanh = 12, HinhAnh = "/images/products/garmin-venu3.jpg", TrangThai = true },
                 new() { TenSanPham = "Chuột Logitech MX Master 3S", MaLoai = loaiSPs[3].MaLoai, ThuongHieu = "Logitech", XuatXu = "Thụy Sĩ", DonGia = 2490000, SoLuongTon = 60, ThoiGianBaoHanh = 12, HinhAnh = "/images/products/logitech-mx.jpg", TrangThai = true },
-                new() { TenSanPham = "Bàn phím cơ Keychron K8", MaLoai = loaiSPs[3].MaLoai, ThuongHieu = "Keychron", XuatXu = "Trung Quốc", DonGia = 2290000, SoLuongTon = 55, ThoiGianBaoHanh = 12, HinhAnh = "/images/products/keychron-k8.jpg", TrangThai = true }
+                new() { TenSanPham = "Bàn phím cơ Keychron K8", MaLoai = loaiSPs[3].MaLoai, ThuongHieu = "Keychron", XuatXu = "Trung Quốc", DonGia = 2290000, SoLuongTon = 55, ThoiGianBaoHanh = 12, HinhAnh = "/images/products/keychron-k8.jpg", TrangThai = true },
+                new() { TenSanPham = "Cáp sạc Mini Type-C (Test VietQR 5K)", MaLoai = loaiSPs[3].MaLoai, ThuongHieu = "LioShop", XuatXu = "Việt Nam", DonGia = 5000, SoLuongTon = 999, ThoiGianBaoHanh = 12, HinhAnh = "/images/products/cap-typec.jpg", TrangThai = true },
+                new() { TenSanPham = "Jack chuyển đổi Audio (Test VietQR 10K)", MaLoai = loaiSPs[3].MaLoai, ThuongHieu = "LioShop", XuatXu = "Việt Nam", DonGia = 10000, SoLuongTon = 999, ThoiGianBaoHanh = 12, HinhAnh = "/images/products/jack-audio.jpg", TrangThai = true }
             };
             context.SanPhams.AddRange(sanPhams);
             await context.SaveChangesAsync();

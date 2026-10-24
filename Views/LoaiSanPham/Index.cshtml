@@ -1,0 +1,67 @@
+@model List<QuanLyCuaHangDienTu.Models.Entities.LoaiSanPham>
+@{ ViewData["Title"] = "Quản lý loại sản phẩm"; Layout = "_AdminLayout"; }
+@Html.AntiForgeryToken()
+
+<h2>Quản lý loại sản phẩm</h2>
+
+<div class="d-flex justify-content-between mb-3">
+    <form class="d-flex" method="get">
+        <input name="keyword" value="@ViewBag.Keyword" class="form-control me-2" placeholder="Tìm..." />
+        <button class="btn btn-outline-primary">Tìm</button>
+    </form>
+    <a asp-action="Create" class="btn btn-success">+ Thêm loại</a>
+</div>
+
+<table class="table table-bordered table-hover">
+    <thead class="table-light">
+        <tr>
+            <th>Mã</th><th>Tên loại</th><th>Mô tả</th><th>Trạng thái</th><th width="200">Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.MaLoai</td>
+                <td>@item.TenLoai</td>
+                <td>@item.MoTa</td>
+                <td>
+                    <span class="badge @(item.TrangThai ? "bg-success" : "bg-secondary")">
+                        @(item.TrangThai ? "Hoạt động" : "Khóa")
+                    </span>
+                </td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.MaLoai" class="btn btn-sm btn-info">Xem</a>
+                    <a asp-action="Edit" asp-route-id="@item.MaLoai" class="btn btn-sm btn-warning">Sửa</a>
+                    <button class="btn btn-sm btn-danger btn-delete" data-id="@item.MaLoai">Xóa</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+<script>
+    document.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            if (!confirm('Bạn chắc chắn muốn xóa?')) return;
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+            const formData = new FormData();
+            formData.append('id', btn.dataset.id);
+            if (token) formData.append('__RequestVerificationToken', token);
+
+            try {
+                const res = await fetch('/LoaiSanPham/Delete/' + btn.dataset.id, { 
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                alert(data.message);
+                if (data.success) location.reload();
+            } catch (e) {
+                alert('Có lỗi xảy ra khi xóa loại sản phẩm.');
+            }
+        });
+    });
+</script>
+}

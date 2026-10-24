@@ -1,4 +1,4 @@
-﻿@model QuanLyCuaHangDienTu.Models.ViewModels.SanPhamFilterViewModel
+@model QuanLyCuaHangDienTu.Models.ViewModels.SanPhamFilterViewModel
 @using QuanLyCuaHangDienTu.Helpers
 @{
     ViewData["Title"] = "Danh sách sản phẩm";
@@ -7,6 +7,7 @@
     var daDangNhap = Context.Session.GetInt32("MaTaiKhoan") != null;
     Layout = laAdmin ? "_AdminLayout" : "_Layout";
 }
+@Html.AntiForgeryToken()
 
 <h2 class="mb-3">Danh sách sản phẩm</h2>
 
@@ -22,9 +23,12 @@
     <div class="col-md-2">
         <select name="ThuongHieu" class="form-select">
             <option value="">-- Thương hiệu --</option>
-            @foreach (var th in ViewBag.ThuongHieus as List<string>)
+            @if (ViewBag.ThuongHieus is List<string> listTh)
             {
-                <option value="@th" selected="@(Model.ThuongHieu == th)">@th</option>
+                foreach (var th in listTh)
+                {
+                    <option value="@th" selected="@(Model.ThuongHieu == th)">@th</option>
+                }
             }
         </select>
     </div>
@@ -129,10 +133,22 @@
     document.querySelectorAll('.btn-del').forEach(btn => {
         btn.addEventListener('click', async () => {
             if (!confirm('Xóa sản phẩm?')) return;
-            const res = await fetch('/SanPham/Delete/' + btn.dataset.id, { method: 'POST' });
-            const data = await res.json();
-            alert(data.message);
-            if (data.success) location.reload();
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+            const formData = new FormData();
+            formData.append('id', btn.dataset.id);
+            if (token) formData.append('__RequestVerificationToken', token);
+
+            try {
+                const res = await fetch('/SanPham/Delete/' + btn.dataset.id, { 
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                alert(data.message);
+                if (data.success) location.reload();
+            } catch (e) {
+                alert('Có lỗi xảy ra khi xóa sản phẩm.');
+            }
         });
     });
 </script>

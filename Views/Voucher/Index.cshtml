@@ -1,5 +1,6 @@
-﻿@model List<QuanLyCuaHangDienTu.Models.Entities.Voucher>
+@model List<QuanLyCuaHangDienTu.Models.Entities.Voucher>
 @{ ViewData["Title"] = "Quản lý Voucher"; Layout = "_AdminLayout"; }
+@Html.AntiForgeryToken()
 
 <h2>Quản lý Voucher</h2>
 
@@ -49,15 +50,23 @@
     document.querySelectorAll('.btn-del').forEach(btn => {
         btn.addEventListener('click', async () => {
             if (!confirm('Xóa voucher?')) return;
-            const res = await fetch('/Voucher/Delete/' + btn.dataset.id, { method: 'POST' });
-            const data = await res.json();
-            alert(data.message);
-            if (data.success) location.reload();
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+            const formData = new FormData();
+            formData.append('id', btn.dataset.id);
+            if (token) formData.append('__RequestVerificationToken', token);
+
+            try {
+                const res = await fetch('/Voucher/Delete/' + btn.dataset.id, { 
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                alert(data.message);
+                if (data.success) location.reload();
+            } catch (e) {
+                alert('Có lỗi xảy ra khi xóa voucher.');
+            }
         });
     });
 </script>
-}@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
 }

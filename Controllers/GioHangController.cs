@@ -129,6 +129,47 @@ namespace QuanLyCuaHangDienTu.Controllers
 
             var kh = await _context.KhachHangs.FindAsync(maKH.Value);
 
+            // Kiểm tra số lượng tồn và trạng thái sản phẩm trong giỏ trước khi vào trang thanh toán
+            bool cartModified = false;
+            var listXoa = new List<CartItemViewModel>();
+            var warnings = new List<string>();
+
+            foreach (var item in cart)
+            {
+                var sp = await _context.SanPhams.FindAsync(item.MaSanPham);
+                if (sp == null || !sp.TrangThai || sp.SoLuongTon <= 0)
+                {
+                    listXoa.Add(item);
+                    warnings.Add($"Sản phẩm '{item.TenSanPham}' đã hết hàng hoặc ngừng kinh doanh và đã được xóa khỏi giỏ.");
+                    cartModified = true;
+                }
+                else if (item.SoLuong > sp.SoLuongTon)
+                {
+                    warnings.Add($"Sản phẩm '{item.TenSanPham}' chỉ còn {sp.SoLuongTon} sản phẩm trong kho. Đã tự động cập nhật số lượng.");
+                    item.SoLuong = sp.SoLuongTon;
+                    cartModified = true;
+                }
+            }
+
+            foreach (var x in listXoa)
+            {
+                cart.Remove(x);
+            }
+
+            if (cartModified)
+            {
+                SaveCart(cart);
+                if (warnings.Any())
+                {
+                    TempData["Warning"] = string.Join(" ", warnings);
+                }
+                if (!cart.Any())
+                {
+                    TempData["Error"] = "Tất cả sản phẩm trong giỏ hàng hiện đã hết hàng hoặc không khả dụng.";
+                    return RedirectToAction("Index", "GioHang");
+                }
+            }
+
             return View(new CheckoutViewModel
             {
                 Items = cart,
@@ -170,90 +211,128 @@ namespace QuanLyCuaHangDienTu.Controllers
                 return await ReloadCheckoutView(model, cart);
             }
 
-            foreach (var item in cart)
+            // Sử dụng Serializable Transaction để đảm bảo tính toàn vẹn kho hàng và chống race condition (đặt hàng đồng thời)
+            using var transaction = await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+            try
             {
-                var sp = await _context.SanPhams.FindAsync(item.MaSanPham);
-                if (sp == null || !sp.TrangThai)
+                // Kiểm tra lại toàn bộ giỏ hàng với dữ liệu tồn kho mới nhất trong DB
+                foreach (var item in cart)
                 {
-                    ModelState.AddModelError("", $"Sản phẩm '{item.TenSanPham}' không khả dụng.");
-                    return await ReloadCheckoutView(model, cart);
+                    var sp = await _context.SanPhams.FindAsync(item.MaSanPham);
+                    if (sp == null || !sp.TrangThai)
+                    {
+                        ModelState.AddModelError("", $"Sản phẩm '{item.TenSanPham}' không còn khả dụng trên hệ thống.");
+                        await transaction.RollbackAsync();
+                        return await ReloadCheckoutView(model, cart);
+                    }
+                    if (item.SoLuong <= 0)
+                    {
+                        ModelState.AddModelError("", $"Số lượng đặt của '{item.TenSanPham}' phải lớn hơn 0.");
+                        await transaction.RollbackAsync();
+                        return await ReloadCheckoutView(model, cart);
+                    }
+                    if (sp.SoLuongTon <= 0)
+                    {
+                        ModelState.AddModelError("", $"Sản phẩm '{item.TenSanPham}' hiện đã hết hàng trong kho.");
+                        await transaction.RollbackAsync();
+                        return await ReloadCheckoutView(model, cart);
+                    }
+                    if (item.SoLuong > sp.SoLuongTon)
+                    {
+                        ModelState.AddModelError("", $"Sản phẩm '{item.TenSanPham}' chỉ còn lại {sp.SoLuongTon} sản phẩm trong kho (bạn đang đặt {item.SoLuong}).");
+                        await transaction.RollbackAsync();
+                        return await ReloadCheckoutView(model, cart);
+                    }
+                    // Đồng bộ lại đơn giá chính xác từ database
+                    item.DonGia = sp.DonGia;
                 }
-                if (item.SoLuong <= 0)
+
+                var tongTien = cart.Sum(c => c.ThanhTien);
+                decimal giamGia = 0;
+                int? maVoucher = null;
+
+                if (!string.IsNullOrEmpty(model.MaCodeVoucher))
                 {
-                    ModelState.AddModelError("", $"Số lượng đặt của '{item.TenSanPham}' phải lớn hơn 0.");
-                    return await ReloadCheckoutView(model, cart);
+                    var (ok, giam, msg) = await _voucherService.ApDungVoucher(model.MaCodeVoucher, tongTien);
+                    if (!ok)
+                    {
+                        ModelState.AddModelError("", msg);
+                        await transaction.RollbackAsync();
+                        return await ReloadCheckoutView(model, cart);
+                    }
+                    giamGia = giam;
+                    var v = await _context.Vouchers.FirstOrDefaultAsync(x => x.MaCode == model.MaCodeVoucher);
+                    if (v == null || v.DaSuDung >= v.SoLuong)
+                    {
+                        ModelState.AddModelError("", "Mã voucher này đã hết lượt sử dụng.");
+                        await transaction.RollbackAsync();
+                        return await ReloadCheckoutView(model, cart);
+                    }
+                    maVoucher = v.MaVoucher;
+                    v.DaSuDung++;
                 }
-                if (item.SoLuong > sp.SoLuongTon)
+
+                // Trừ số lượng tồn kho sản phẩm ngay khi đặt hàng thành công
+                foreach (var item in cart)
                 {
-                    ModelState.AddModelError("", $"Sản phẩm '{item.TenSanPham}' chỉ còn {sp.SoLuongTon}.");
-                    return await ReloadCheckoutView(model, cart);
+                    var sp = await _context.SanPhams.FindAsync(item.MaSanPham);
+                    sp!.SoLuongTon -= item.SoLuong;
                 }
-                // Đảm bảo đơn giá lấy từ sản phẩm tại thời điểm đặt hàng (không cho người dùng tự nhập)
-                item.DonGia = sp.DonGia;
-            }
 
-            var tongTien = cart.Sum(c => c.ThanhTien);
-            decimal giamGia = 0;
-            int? maVoucher = null;
+                var phuongThuc = model.PhuongThucThanhToan == "COD" ? "COD" : "VietQR";
+                var ghiChuDayDu = $"[PTTT: {phuongThuc}]" + (string.IsNullOrWhiteSpace(model.GhiChu) ? "" : $" | {model.GhiChu.Trim()}");
 
-            if (!string.IsNullOrEmpty(model.MaCodeVoucher))
-            {
-                var (ok, giam, msg) = await _voucherService.ApDungVoucher(model.MaCodeVoucher, tongTien);
-                if (!ok)
+                var donHang = new DonHang
                 {
-                    ModelState.AddModelError("", msg);
-                    return await ReloadCheckoutView(model, cart);
+                    MaKhachHang = maKH,
+                    NgayDat = DateTime.Now,
+                    DiaChiGiaoHang = model.DiaChiGiaoHang,
+                    GhiChu = ghiChuDayDu,
+                    TongTien = tongTien - giamGia,
+                    GiamGia = giamGia,
+                    MaVoucher = maVoucher,
+                    TrangThai = "ChoXacNhan",
+                    ChiTietDonHangs = cart.Select(c => new ChiTietDonHang
+                    {
+                        MaSanPham = c.MaSanPham,
+                        SoLuong = c.SoLuong,
+                        DonGia = c.DonGia,
+                        ThanhTien = c.ThanhTien
+                    }).ToList()
+                };
+
+                _context.DonHangs.Add(donHang);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                await _context.Entry(donHang).Reference(d => d.KhachHang).LoadAsync();
+                if (donHang.KhachHang != null)
+                {
+                    _ = Task.Run(async () =>
+                    {
+                        try { await _emailService.GuiEmailDatHangThanhCong(donHang, donHang.KhachHang.Email); }
+                        catch (Exception ex) { _logger.LogError(ex, "Lỗi gửi email"); }
+                    });
                 }
-                giamGia = giam;
-                var v = await _context.Vouchers.FirstOrDefaultAsync(x => x.MaCode == model.MaCodeVoucher);
-                maVoucher = v?.MaVoucher;
-            }
 
-            var phuongThuc = model.PhuongThucThanhToan == "COD" ? "COD" : "VietQR";
-            var ghiChuDayDu = $"[PTTT: {phuongThuc}]" + (string.IsNullOrWhiteSpace(model.GhiChu) ? "" : $" | {model.GhiChu.Trim()}");
-
-            var donHang = new DonHang
-            {
-                MaKhachHang = maKH,
-                NgayDat = DateTime.Now,
-                DiaChiGiaoHang = model.DiaChiGiaoHang,
-                GhiChu = ghiChuDayDu,
-                TongTien = tongTien - giamGia,
-                GiamGia = giamGia,
-                MaVoucher = maVoucher,
-                TrangThai = "ChoXacNhan",
-                ChiTietDonHangs = cart.Select(c => new ChiTietDonHang
+                HttpContext.Session.Remove(CART_KEY);
+                if (phuongThuc == "COD")
                 {
-                    MaSanPham = c.MaSanPham,
-                    SoLuong = c.SoLuong,
-                    DonGia = c.DonGia,
-                    ThanhTien = c.ThanhTien
-                }).ToList()
-            };
-
-            _context.DonHangs.Add(donHang);
-            await _context.SaveChangesAsync();
-
-            await _context.Entry(donHang).Reference(d => d.KhachHang).LoadAsync();
-            if (donHang.KhachHang != null)
-            {
-                _ = Task.Run(async () =>
+                    TempData["Success"] = $"Đặt hàng thành công! Mã đơn: #{donHang.MaDonHang}. Phương thức: Tiền mặt khi nhận hàng (COD).";
+                }
+                else
                 {
-                    try { await _emailService.GuiEmailDatHangThanhCong(donHang, donHang.KhachHang.Email); }
-                    catch (Exception ex) { _logger.LogError(ex, "Lỗi gửi email"); }
-                });
+                    TempData["Success"] = $"Đặt hàng thành công! Vui lòng quét mã VietQR bên dưới để thanh toán đơn hàng #{donHang.MaDonHang}.";
+                }
+                return RedirectToAction("Details", "DonHang", new { id = donHang.MaDonHang });
             }
-
-            HttpContext.Session.Remove(CART_KEY);
-            if (phuongThuc == "COD")
+            catch (Exception ex)
             {
-                TempData["Success"] = $"Đặt hàng thành công! Mã đơn: #{donHang.MaDonHang}. Phương thức: Tiền mặt khi nhận hàng (COD).";
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Lỗi xảy ra trong quá trình đặt hàng");
+                ModelState.AddModelError("", "Đã có lỗi xảy ra khi xử lý đơn hàng. Vui lòng thử lại!");
+                return await ReloadCheckoutView(model, cart);
             }
-            else
-            {
-                TempData["Success"] = $"Đặt hàng thành công! Vui lòng quét mã VietQR bên dưới để thanh toán đơn hàng #{donHang.MaDonHang}.";
-            }
-            return RedirectToAction("Details", "DonHang", new { id = donHang.MaDonHang });
         }
 
         private async Task<IActionResult> ReloadCheckoutView(CheckoutViewModel model, List<CartItemViewModel> cart)

@@ -137,36 +137,9 @@ namespace QuanLyCuaHangDienTu.Controllers
 
                 var trangThaiCu = dh.TrangThai;
 
-                // Trừ kho khi xác nhận
-                if (trangThai == "DaXacNhan" && dh.TrangThai == "ChoXacNhan")
-                {
-                    foreach (var ct in dh.ChiTietDonHangs)
-                    {
-                        var sp = await _context.SanPhams.FindAsync(ct.MaSanPham);
-                        if (sp == null || sp.SoLuongTon < ct.SoLuong)
-                        {
-                            await transaction.RollbackAsync();
-                            return Json(new { success = false, message = $"SP '{sp?.TenSanPham}' không đủ tồn kho." });
-                        }
-                    }
-                    foreach (var ct in dh.ChiTietDonHangs)
-                    {
-                        var sp = await _context.SanPhams.FindAsync(ct.MaSanPham);
-                        sp!.SoLuongTon -= ct.SoLuong;
-                    }
-                    if (dh.Voucher != null)
-                    {
-                        if (dh.Voucher.DaSuDung >= dh.Voucher.SoLuong)
-                        {
-                            await transaction.RollbackAsync();
-                            return Json(new { success = false, message = "Voucher đã hết lượt." });
-                        }
-                        dh.Voucher.DaSuDung++;
-                    }
-                }
-
-                // Hoàn kho khi Admin hủy
-                if (trangThai == "DaHuy" && (dh.TrangThai == "DaXacNhan" || dh.TrangThai == "DangGiao"))
+                // Đơn hàng đã được trừ kho và cập nhật voucher ngay khi đặt hàng (GioHangController.DatHang)
+                // Khi hủy đơn (từ ChoXacNhan, DaXacNhan, DangGiao), hoàn trả lại tồn kho và voucher
+                if (trangThai == "DaHuy" && (dh.TrangThai == "ChoXacNhan" || dh.TrangThai == "DaXacNhan" || dh.TrangThai == "DangGiao"))
                 {
                     foreach (var ct in dh.ChiTietDonHangs)
                     {
@@ -234,8 +207,8 @@ namespace QuanLyCuaHangDienTu.Controllers
             using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
             try
             {
-                // 3. Hoàn kho nếu đơn đã được xác nhận (vì lúc xác nhận đã bị trừ kho)
-                if (donHang.TrangThai == "DaXacNhan")
+                // 3. Hoàn kho và voucher khi khách hủy đơn (đã trừ kho ngay lúc đặt hàng)
+                if (donHang.TrangThai == "ChoXacNhan" || donHang.TrangThai == "DaXacNhan")
                 {
                     foreach (var ct in donHang.ChiTietDonHangs)
                     {
@@ -302,7 +275,7 @@ namespace QuanLyCuaHangDienTu.Controllers
 
                 if (chapNhan)
                 {
-                    if (dh.TrangThai == "DaXacNhan" || dh.TrangThai == "DangGiao")
+                    if (dh.TrangThai == "ChoXacNhan" || dh.TrangThai == "DaXacNhan" || dh.TrangThai == "DangGiao")
                     {
                         foreach (var ct in dh.ChiTietDonHangs)
                         {
@@ -437,27 +410,8 @@ namespace QuanLyCuaHangDienTu.Controllers
                     return Json(new { success = false, message = $"Đơn hàng hiện đang ở trạng thái '{dh.TrangThai}'." });
                 }
 
-                // Trừ tồn kho sản phẩm
-                foreach (var ct in dh.ChiTietDonHangs)
-                {
-                    var sp = await _context.SanPhams.FindAsync(ct.MaSanPham);
-                    if (sp == null || sp.SoLuongTon < ct.SoLuong)
-                    {
-                        await transaction.RollbackAsync();
-                        return Json(new { success = false, message = $"Sản phẩm '{sp?.TenSanPham}' không đủ tồn kho." });
-                    }
-                    sp.SoLuongTon -= ct.SoLuong;
-                }
-
-                // Tăng lượt dùng voucher
-                if (dh.Voucher != null)
-                {
-                    if (dh.Voucher.DaSuDung < dh.Voucher.SoLuong)
-                    {
-                        dh.Voucher.DaSuDung++;
-                    }
-                }
-
+                // Đơn hàng đã được kiểm tra & trừ tồn kho ngay khi đặt hàng tại GioHangController.DatHang
+                // Tại đây chỉ xác nhận thanh toán thành công và chuyển trạng thái sang DaXacNhan
                 dh.TrangThai = "DaXacNhan";
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();

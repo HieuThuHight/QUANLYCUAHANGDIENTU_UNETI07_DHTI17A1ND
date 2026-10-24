@@ -55,7 +55,8 @@
                 <label asp-for="MaCodeVoucher" class="form-label fw-bold"><i class="bi bi-ticket-perforated text-danger"></i> Mã Voucher giảm giá:</label>
                 <div class="input-group mb-2">
                     <input asp-for="MaCodeVoucher" id="maVoucher" class="form-control text-uppercase fw-bold" placeholder="Nhập mã hoặc chọn bên dưới" />
-                    <button type="button" id="btnApDung" class="btn btn-outline-primary fw-semibold">Áp dụng</button>
+                    <button type="button" id="btnApDung" class="btn btn-primary fw-semibold"><i class="bi bi-tag-fill me-1"></i> Áp dụng</button>
+                    <button type="button" id="btnHuyVoucher" class="btn btn-outline-danger fw-semibold d-none" title="Bỏ chọn mã"><i class="bi bi-x-circle"></i> Bỏ mã</button>
                 </div>
                 <div id="voucherMsg" class="small fw-semibold mb-2"></div>
 
@@ -132,31 +133,63 @@
 <script>
     const tongTien = @Model.TongTien;
 
+    function resetVoucherUI() {
+        document.getElementById('giamGia').innerText = '0 đ';
+        document.getElementById('thanhToan').innerText = tongTien.toLocaleString('vi-VN') + ' đ';
+        const btnHuy = document.getElementById('btnHuyVoucher');
+        if (btnHuy) btnHuy.classList.add('d-none');
+    }
+
     async function applyVoucher(ma) {
+        const msgEl = document.getElementById('voucherMsg');
+        const btnHuy = document.getElementById('btnHuyVoucher');
         if (!ma || !ma.trim()) {
-            document.getElementById('voucherMsg').innerText = 'Vui lòng nhập hoặc chọn mã voucher.';
-            document.getElementById('voucherMsg').className = 'text-danger small fw-semibold';
+            msgEl.innerText = 'Vui lòng nhập hoặc chọn mã voucher.';
+            msgEl.className = 'text-danger small fw-semibold';
+            resetVoucherUI();
             return;
         }
-        const res = await fetch('/GioHang/KiemTraVoucher', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ maCode: ma.trim(), tongTien: tongTien })
-        });
-        const data = await res.json();
-        const msgEl = document.getElementById('voucherMsg');
-        msgEl.innerText = data.message;
-        msgEl.className = data.success ? 'text-success small fw-semibold' : 'text-danger small fw-semibold';
-        if (data.success) {
-            document.getElementById('giamGia').innerText = data.giam.toLocaleString('vi-VN') + ' đ';
-            document.getElementById('thanhToan').innerText = (tongTien - data.giam).toLocaleString('vi-VN') + ' đ';
+        try {
+            const res = await fetch('/GioHang/KiemTraVoucher', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ maCode: ma.trim(), tongTien: tongTien })
+            });
+            const data = await res.json();
+            msgEl.innerText = data.message;
+            if (data.success) {
+                msgEl.className = 'text-success small fw-semibold';
+                document.getElementById('giamGia').innerText = '-' + data.giam.toLocaleString('vi-VN') + ' đ';
+                document.getElementById('thanhToan').innerText = (tongTien - data.giam).toLocaleString('vi-VN') + ' đ';
+                if (btnHuy) btnHuy.classList.remove('d-none');
+            } else {
+                msgEl.className = 'text-danger small fw-semibold';
+                resetVoucherUI();
+            }
+        } catch (e) {
+            msgEl.innerText = 'Lỗi kết nối kiểm tra mã voucher.';
+            msgEl.className = 'text-danger small fw-semibold';
+            resetVoucherUI();
         }
+    }
+
+    function clearVoucher() {
+        document.getElementById('maVoucher').value = '';
+        resetVoucherUI();
+        const msgEl = document.getElementById('voucherMsg');
+        msgEl.innerText = 'Đã hủy áp dụng mã voucher.';
+        msgEl.className = 'text-muted small fw-semibold';
     }
 
     document.getElementById('btnApDung').addEventListener('click', () => {
         const ma = document.getElementById('maVoucher').value;
         applyVoucher(ma);
     });
+
+    const btnHuy = document.getElementById('btnHuyVoucher');
+    if (btnHuy) {
+        btnHuy.addEventListener('click', clearVoucher);
+    }
 
     // Bắt sự kiện khi click vào nút "Dùng mã" của voucher gợi ý
     document.querySelectorAll('.btn-chon-voucher').forEach(btn => {

@@ -413,12 +413,13 @@
                 const res = await fetch(`/DonHang/KiemTraTrangThai?id=${maDonHang}`);
                 const data = await res.json();
                 if (data.success) {
-                if (data.daHuy || data.trangThai === 'DaHuy') {
-                    clearInterval(pollInterval);
-                    location.reload();
-                } else if (data.daXacNhan) {
-                    clearInterval(pollInterval);
-                    onThanhToanThanhCong();
+                    if (data.daHuy || data.trangThai === 'DaHuy') {
+                        clearInterval(pollInterval);
+                        location.reload();
+                    } else if (data.daXacNhan) {
+                        clearInterval(pollInterval);
+                        onThanhToanThanhCong();
+                    }
                 }
             } catch (err) {
                 console.error("Lỗi polling trạng thái:", err);
@@ -444,6 +445,7 @@
         }
         const cardQR = document.getElementById('cardVietQR');
         if (cardQR) {
+            cardQR.className = 'card shadow-sm border-success h-100';
             cardQR.innerHTML = `
                 <div class="card-header bg-success text-white fw-bold text-center">
                     <i class="bi bi-check-circle-fill me-1"></i> THANH TOÁN THÀNH CÔNG
@@ -469,15 +471,18 @@
     if (btnXacNhan) {
         btnXacNhan.addEventListener('click', async () => {
             btnXacNhan.disabled = true;
-            btnXacNhan.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Đang xử lý giao dịch...';
+            btnXacNhan.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Đang xác nhận với ngân hàng...';
             try {
                 const res = await fetch(`/DonHang/XacNhanThanhToanTuDong?id=${maDonHang}`, {
                     method: 'POST'
                 });
                 const data = await res.json();
                 if (data.success) {
-                    clearInterval(pollInterval);
+                    if (pollInterval) clearInterval(pollInterval);
                     onThanhToanThanhCong();
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
                 } else {
                     alert(data.message || 'Có lỗi xảy ra khi xác nhận giao dịch.');
                     btnXacNhan.disabled = false;

@@ -32,12 +32,12 @@ namespace QuanLyCuaHangDienTu.Models.Entities
         public string? XuatXu { get; set; }
 
         [Required(ErrorMessage = "Đơn giá không được để trống")]
-        [Range(0.01, double.MaxValue, ErrorMessage = "Đơn giá phải lớn hơn 0")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "Đơn giá phải lớn hơn 0 VNĐ")]
         [Column(TypeName = "decimal(18,2)")]
         [Display(Name = "Đơn giá")]
         public decimal DonGia { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Số lượng tồn không được để trống")]
         [Range(0, int.MaxValue, ErrorMessage = "Số lượng tồn phải >= 0")]
         [Display(Name = "Số lượng tồn")]
         public int SoLuongTon { get; set; }

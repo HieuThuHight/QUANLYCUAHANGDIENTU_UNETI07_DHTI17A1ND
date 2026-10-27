@@ -92,6 +92,26 @@ namespace QuanLyCuaHangDienTu.Controllers
         [AdminAuthorize]
         public async Task<IActionResult> Create(SanPham sp, IFormFile? fileAnh)
         {
+            // 1. Chuẩn hóa & kiểm tra trùng tên sản phẩm (không phân biệt hoa thường)
+            sp.TenSanPham = sp.TenSanPham?.Trim() ?? string.Empty;
+            if (!string.IsNullOrEmpty(sp.TenSanPham) &&
+                await _context.SanPhams.AnyAsync(s => s.TenSanPham.ToLower() == sp.TenSanPham.ToLower()))
+            {
+                ModelState.AddModelError("TenSanPham", "Tên sản phẩm này đã tồn tại trong hệ thống. Vui lòng nhập tên khác.");
+            }
+
+            // 2. Báo lỗi khi đơn giá <= 0
+            if (sp.DonGia <= 0)
+            {
+                ModelState.AddModelError("DonGia", "Đơn giá sản phẩm phải lớn hơn 0 VNĐ.");
+            }
+
+            // 3. Kiểm tra số lượng tồn không được âm
+            if (sp.SoLuongTon < 0)
+            {
+                ModelState.AddModelError("SoLuongTon", "Số lượng tồn kho không được nhỏ hơn 0.");
+            }
+
             if (fileAnh != null && fileAnh.Length > 0)
             {
                 try { sp.HinhAnh = await SaveImage(fileAnh); }
@@ -102,19 +122,23 @@ namespace QuanLyCuaHangDienTu.Controllers
                 }
             }
 
-            if (!ModelState.IsValid) { await LoadDropdowns(sp.MaLoai); return View(sp); }
+            if (!ModelState.IsValid) 
+            { 
+                await LoadDropdowns(sp.MaLoai); 
+                return View(sp); 
+            }
 
             try
             {
                 _context.SanPhams.Add(sp);
                 await _context.SaveChangesAsync();
-                TempData["Success"] = "Thêm sản phẩm thành công!";
+                TempData["Success"] = "Thêm sản phẩm mới thành công!";
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi thêm sản phẩm");
-                ModelState.AddModelError("", "Có lỗi xảy ra.");
+                ModelState.AddModelError("", "Có lỗi xảy ra khi lưu sản phẩm. Vui lòng thử lại!");
                 await LoadDropdowns(sp.MaLoai);
                 return View(sp);
             }
@@ -137,6 +161,26 @@ namespace QuanLyCuaHangDienTu.Controllers
         {
             if (id != sp.MaSanPham) return NotFound();
 
+            // 1. Chuẩn hóa & kiểm tra trùng tên sản phẩm với sản phẩm khác (không phân biệt hoa thường)
+            sp.TenSanPham = sp.TenSanPham?.Trim() ?? string.Empty;
+            if (!string.IsNullOrEmpty(sp.TenSanPham) &&
+                await _context.SanPhams.AnyAsync(s => s.TenSanPham.ToLower() == sp.TenSanPham.ToLower() && s.MaSanPham != id))
+            {
+                ModelState.AddModelError("TenSanPham", "Tên sản phẩm này đã được sử dụng bởi sản phẩm khác. Vui lòng chọn tên khác.");
+            }
+
+            // 2. Báo lỗi khi đơn giá <= 0
+            if (sp.DonGia <= 0)
+            {
+                ModelState.AddModelError("DonGia", "Đơn giá sản phẩm phải lớn hơn 0 VNĐ.");
+            }
+
+            // 3. Kiểm tra số lượng tồn không được âm
+            if (sp.SoLuongTon < 0)
+            {
+                ModelState.AddModelError("SoLuongTon", "Số lượng tồn kho không được nhỏ hơn 0.");
+            }
+
             if (fileAnh != null && fileAnh.Length > 0)
             {
                 try
@@ -152,19 +196,23 @@ namespace QuanLyCuaHangDienTu.Controllers
                 }
             }
 
-            if (!ModelState.IsValid) { await LoadDropdowns(sp.MaLoai); return View(sp); }
+            if (!ModelState.IsValid) 
+            { 
+                await LoadDropdowns(sp.MaLoai); 
+                return View(sp); 
+            }
 
             try
             {
                 _context.SanPhams.Update(sp);
                 await _context.SaveChangesAsync();
-                TempData["Success"] = "Cập nhật thành công!";
+                TempData["Success"] = "Cập nhật sản phẩm thành công!";
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi cập nhật sản phẩm #{MaSanPham}", id);
-                ModelState.AddModelError("", "Có lỗi xảy ra.");
+                ModelState.AddModelError("", "Có lỗi xảy ra khi cập nhật. Vui lòng thử lại!");
                 await LoadDropdowns(sp.MaLoai);
                 return View(sp);
             }

@@ -1,68 +1,255 @@
 ﻿@model QuanLyCuaHangDienTu.Models.Entities.SanPham
-@{ ViewData["Title"] = "Thêm sản phẩm"; Layout = "_AdminLayout"; }
+@{
+    ViewData["Title"] = "Thêm sản phẩm mới";
+    Layout = "_AdminLayout";
+}
 
-<h2>Thêm sản phẩm</h2>
+<div class="container-fluid px-0">
+    <!-- Breadcrumb & Header -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a asp-controller="ThongKe" asp-action="Index" class="text-decoration-none">Quản trị</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index" class="text-decoration-none">Sản phẩm</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Thêm mới</li>
+                </ol>
+            </nav>
+            <h3 class="fw-bold mb-0 text-dark">
+                <i class="bi bi-plus-circle-fill text-primary me-2"></i>Thêm Sản Phẩm Mới
+            </h3>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+        </a>
+    </div>
 
-<div class="row">
-    <div class="col-md-8">
-        <form asp-action="Create" method="post" enctype="multipart/form-data">
-            @Html.AntiForgeryToken()
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label asp-for="TenSanPham" class="form-label"></label>
-                    <input asp-for="TenSanPham" class="form-control" />
-                    <span asp-validation-for="TenSanPham" class="text-danger"></span>
+    <!-- Alert khi có lỗi xác thực Model -->
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm border-danger border-opacity-25 mb-4" role="alert">
+            <div class="d-flex align-items-start gap-2">
+                <i class="bi bi-exclamation-triangle-fill fs-5 mt-1 text-danger"></i>
+                <div class="flex-grow-1">
+                    <h6 class="fw-bold mb-1">Không thể lưu sản phẩm. Vui lòng khắc phục các lỗi sau:</h6>
+                    <div asp-validation-summary="All" class="text-danger small mb-0 ps-3"></div>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label asp-for="MaLoai" class="form-label"></label>
-                    <select asp-for="MaLoai" class="form-select" asp-items="ViewBag.LoaiSanPhams">
-                        <option value="">-- Chọn loại --</option>
-                    </select>
-                    <span asp-validation-for="MaLoai" class="text-danger"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    }
+
+    <form asp-action="Create" method="post" enctype="multipart/form-data" id="formCreateProduct">
+        @Html.AntiForgeryToken()
+
+        <div class="row g-4">
+            <!-- Cột trái: Thông tin cơ bản & Giá -->
+            <div class="col-lg-8">
+                <!-- Card 1: Thông tin chung -->
+                <div class="card border-0 shadow-sm rounded-3 mb-4">
+                    <div class="card-header bg-white py-3 border-bottom">
+                        <h5 class="card-title fw-bold mb-0 text-primary d-flex align-items-center gap-2">
+                            <i class="bi bi-info-circle-fill"></i> Thông tin cơ bản
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <!-- Tên sản phẩm -->
+                            <div class="col-12">
+                                <label asp-for="TenSanPham" class="form-label fw-semibold">
+                                    Tên sản phẩm <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="TenSanPham" class="form-control form-control-lg @(ViewData.ModelState["TenSanPham"]?.Errors.Any() == true ? "is-invalid" : "")" 
+                                       placeholder="Ví dụ: iPhone 15 Pro Max 256GB Titan Tự Nhiên..." id="tenSanPhamInput" />
+                                <span asp-validation-for="TenSanPham" class="invalid-feedback fw-semibold d-block"></span>
+                                <small class="text-muted">Tên sản phẩm phải là duy nhất, không được trùng với sản phẩm đã có.</small>
+                            </div>
+
+                            <!-- Loại sản phẩm -->
+                            <div class="col-md-6">
+                                <label asp-for="MaLoai" class="form-label fw-semibold">
+                                    Loại sản phẩm <span class="text-danger">*</span>
+                                </label>
+                                <select asp-for="MaLoai" class="form-select @(ViewData.ModelState["MaLoai"]?.Errors.Any() == true ? "is-invalid" : "")" asp-items="ViewBag.LoaiSanPhams">
+                                    <option value="">-- Chọn danh mục sản phẩm --</option>
+                                </select>
+                                <span asp-validation-for="MaLoai" class="invalid-feedback fw-semibold d-block"></span>
+                            </div>
+
+                            <!-- Thương hiệu -->
+                            <div class="col-md-6">
+                                <label asp-for="ThuongHieu" class="form-label fw-semibold">
+                                    Thương hiệu <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="ThuongHieu" class="form-control @(ViewData.ModelState["ThuongHieu"]?.Errors.Any() == true ? "is-invalid" : "")" 
+                                       placeholder="Ví dụ: Apple, Samsung, Sony..." />
+                                <span asp-validation-for="ThuongHieu" class="invalid-feedback fw-semibold d-block"></span>
+                            </div>
+
+                            <!-- Xuất xứ -->
+                            <div class="col-12">
+                                <label asp-for="XuatXu" class="form-label fw-semibold">Xuất xứ / Nhà máy sản xuất</label>
+                                <input asp-for="XuatXu" class="form-control" placeholder="Ví dụ: Chính hãng VN/A, Trung Quốc, Việt Nam..." />
+                                <span asp-validation-for="XuatXu" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Mô tả -->
+                            <div class="col-12">
+                                <label asp-for="MoTa" class="form-label fw-semibold">Mô tả chi tiết sản phẩm</label>
+                                <textarea asp-for="MoTa" class="form-control" rows="4" placeholder="Nhập thông số kỹ thuật, tính năng nổi bật, phụ kiện đi kèm..."></textarea>
+                                <span asp-validation-for="MoTa" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label asp-for="ThuongHieu" class="form-label"></label>
-                    <input asp-for="ThuongHieu" class="form-control" />
-                    <span asp-validation-for="ThuongHieu" class="text-danger"></span>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label asp-for="XuatXu" class="form-label"></label>
-                    <input asp-for="XuatXu" class="form-control" />
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label asp-for="DonGia" class="form-label"></label>
-                    <input asp-for="DonGia" class="form-control" type="number" />
-                    <span asp-validation-for="DonGia" class="text-danger"></span>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label asp-for="SoLuongTon" class="form-label"></label>
-                    <input asp-for="SoLuongTon" class="form-control" type="number" />
-                    <span asp-validation-for="SoLuongTon" class="text-danger"></span>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label asp-for="ThoiGianBaoHanh" class="form-label"></label>
-                    <input asp-for="ThoiGianBaoHanh" class="form-control" type="number" />
-                </div>
-                <div class="col-md-12 mb-3">
-                    <label asp-for="MoTa" class="form-label"></label>
-                    <textarea asp-for="MoTa" class="form-control" rows="3"></textarea>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Hình ảnh</label>
-                    <input type="file" name="fileAnh" class="form-control" accept="image/*" />
-                </div>
-                <div class="col-md-6 mb-3 form-check mt-4">
-                    <input asp-for="TrangThai" class="form-check-input" />
-                    <label asp-for="TrangThai" class="form-check-label"></label>
+
+                <!-- Card 2: Giá & Quản lý tồn kho -->
+                <div class="card border-0 shadow-sm rounded-3">
+                    <div class="card-header bg-white py-3 border-bottom">
+                        <h5 class="card-title fw-bold mb-0 text-success d-flex align-items-center gap-2">
+                            <i class="bi bi-cash-coin"></i> Giá bán & Quản lý kho
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <!-- Đơn giá -->
+                            <div class="col-md-6">
+                                <label asp-for="DonGia" class="form-label fw-semibold">
+                                    Đơn giá bán <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <input asp-for="DonGia" class="form-control @(ViewData.ModelState["DonGia"]?.Errors.Any() == true ? "is-invalid" : "")" 
+                                           type="number" step="any" min="1" placeholder="Nhập số tiền..." id="donGiaInput" />
+                                    <span class="input-group-text fw-bold bg-light">VNĐ</span>
+                                </div>
+                                <span asp-validation-for="DonGia" class="text-danger small fw-semibold d-block mt-1"></span>
+                                <div id="donGiaLiveAlert" class="text-danger small fw-semibold mt-1 d-none">
+                                    <i class="bi bi-x-circle-fill me-1"></i>Đơn giá phải lớn hơn 0 VNĐ!
+                                </div>
+                                <small class="text-muted">Đơn giá bán niêm yết cho khách hàng, bắt buộc phải lớn hơn 0.</small>
+                            </div>
+
+                            <!-- Số lượng tồn -->
+                            <div class="col-md-6">
+                                <label asp-for="SoLuongTon" class="form-label fw-semibold">
+                                    Số lượng tồn kho <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="SoLuongTon" class="form-control @(ViewData.ModelState["SoLuongTon"]?.Errors.Any() == true ? "is-invalid" : "")" 
+                                       type="number" min="0" placeholder="0" id="soLuongTonInput" />
+                                <span asp-validation-for="SoLuongTon" class="text-danger small fw-semibold d-block mt-1"></span>
+                                <small class="text-muted">Số lượng hàng thực tế hiện có trong kho (>= 0).</small>
+                            </div>
+
+                            <!-- Thời gian bảo hành -->
+                            <div class="col-md-6">
+                                <label asp-for="ThoiGianBaoHanh" class="form-label fw-semibold">Thời gian bảo hành</label>
+                                <div class="input-group">
+                                    <input asp-for="ThoiGianBaoHanh" class="form-control" type="number" min="0" max="120" value="12" />
+                                    <span class="input-group-text bg-light">Tháng</span>
+                                </div>
+                                <span asp-validation-for="ThoiGianBaoHanh" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary">Lưu</button>
-            <a asp-action="Index" class="btn btn-secondary">Hủy</a>
-        </form>
-    </div>
+
+            <!-- Cột phải: Hình ảnh & Trạng thái -->
+            <div class="col-lg-4">
+                <!-- Card 3: Hình ảnh sản phẩm -->
+                <div class="card border-0 shadow-sm rounded-3 mb-4">
+                    <div class="card-header bg-white py-3 border-bottom">
+                        <h5 class="card-title fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+                            <i class="bi bi-image-fill text-warning"></i> Ảnh đại diện sản phẩm
+                        </h5>
+                    </div>
+                    <div class="card-body p-4 text-center">
+                        <div class="border rounded-3 p-3 bg-light mb-3 d-flex align-items-center justify-content-center" style="min-height: 220px;">
+                            <img id="imagePreview" src="/images/no-image.png" alt="Xem trước ảnh" 
+                                 class="img-fluid rounded" style="max-height: 200px; object-fit: contain;" />
+                        </div>
+                        <div class="text-start mb-2">
+                            <label class="form-label fw-semibold small">Chọn tập tin ảnh (JPG, PNG, WEBP):</label>
+                            <input type="file" name="fileAnh" id="fileAnhInput" class="form-control" accept="image/*" />
+                        </div>
+                        <small class="text-muted d-block text-start">Dung lượng tối đa 5MB. Ảnh sẽ được tự động tối ưu hóa.</small>
+                    </div>
+                </div>
+
+                <!-- Card 4: Trạng thái & Thao tác -->
+                <div class="card border-0 shadow-sm rounded-3">
+                    <div class="card-header bg-white py-3 border-bottom">
+                        <h5 class="card-title fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+                            <i class="bi bi-toggle-on text-info"></i> Thiết lập hiển thị
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="form-check form-switch mb-3 fs-6">
+                            <input asp-for="TrangThai" class="form-check-input" type="checkbox" id="switchTrangThai" checked />
+                            <label class="form-check-label fw-semibold" for="switchTrangThai">
+                                Đang kinh doanh (Hiển thị cho khách)
+                            </label>
+                        </div>
+                        <small class="text-muted d-block mb-4">Tắt mục này nếu muốn tạm ẩn sản phẩm khỏi gian hàng mà không xóa dữ liệu.</small>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg fw-bold shadow-sm" id="btnSubmit">
+                                <i class="bi bi-check-circle-fill me-1"></i> Lưu Sản Phẩm Mới
+                            </button>
+                            <a asp-action="Index" class="btn btn-light border py-2">
+                                <i class="bi bi-x-circle me-1"></i> Hủy bỏ
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Preview ảnh khi chọn file
+        document.getElementById('fileAnhInput')?.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (evt) {
+                    document.getElementById('imagePreview').src = evt.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Kiểm tra trực tiếp đơn giá <= 0 phía Client
+        const donGiaInput = document.getElementById('donGiaInput');
+        const donGiaAlert = document.getElementById('donGiaLiveAlert');
+        const form = document.getElementById('formCreateProduct');
+
+        function validateDonGia() {
+            if (!donGiaInput) return true;
+            const val = parseFloat(donGiaInput.value);
+            if (isNaN(val) || val <= 0) {
+                donGiaInput.classList.add('is-invalid');
+                if (donGiaAlert) donGiaAlert.classList.remove('d-none');
+                return false;
+            } else {
+                donGiaInput.classList.remove('is-invalid');
+                if (donGiaAlert) donGiaAlert.classList.add('d-none');
+                return true;
+            }
+        }
+
+        donGiaInput?.addEventListener('input', validateDonGia);
+        donGiaInput?.addEventListener('change', validateDonGia);
+
+        form?.addEventListener('submit', function (e) {
+            if (!validateDonGia()) {
+                e.preventDefault();
+                donGiaInput.focus();
+                alert('Đơn giá sản phẩm phải lớn hơn 0 VNĐ. Vui lòng nhập lại!');
+            }
+        });
+    </script>
 }

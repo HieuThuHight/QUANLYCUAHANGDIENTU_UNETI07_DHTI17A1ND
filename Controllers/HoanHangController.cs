@@ -69,6 +69,9 @@ namespace QuanLyCuaHangDienTu.Controllers
 
         // ADMIN QUẢN LÝ
         [AdminAuthorize]
+        public IActionResult Index() => RedirectToAction(nameof(QuanLy));
+
+        [AdminAuthorize]
         public async Task<IActionResult> QuanLy(string? trangThai)
         {
             var query = _context.YeuCauHoanHangs.Include(y => y.DonHang).ThenInclude(d => d!.KhachHang).AsQueryable();

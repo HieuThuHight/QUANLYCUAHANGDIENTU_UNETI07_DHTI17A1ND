@@ -1,14 +1,16 @@
 ﻿// Họ và tên: Đỗ Văn Hiếu
 // Mã sinh viên: 23203100018
-// Nội dung thực hiện: Cau hinh Program.cs
+// Nội dung thực hiện: Cấu hình Program.cs
 
 using Microsoft.EntityFrameworkCore;
 using QuanLyCuaHangDienTu.Data;
 using QuanLyCuaHangDienTu.Services;
 
-var contentRoot = Directory.Exists(Path.Combine(AppContext.BaseDirectory, "Views"))
-    ? AppContext.BaseDirectory
-    : Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", ".."));
+// Xác định ContentRootPath: Ưu tiên thư mục gốc project khi chạy trong môi trường phát triển (VS / dotnet run)
+var projRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", ".."));
+var contentRoot = Directory.Exists(Path.Combine(projRoot, "wwwroot"))
+    ? projRoot
+    : AppContext.BaseDirectory;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
@@ -16,19 +18,27 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
     ContentRootPath = contentRoot
 });
 
-// Ensure WebRootPath is always found whether run via VS, dotnet run, or bin output
-if (string.IsNullOrEmpty(builder.Environment.WebRootPath) || !Directory.Exists(builder.Environment.WebRootPath))
+// Đảm bảo WebRootPath luôn trỏ tới thư mục wwwroot chứa đầy đủ hình ảnh sản phẩm
+var wwwrootCandidate = Path.Combine(contentRoot, "wwwroot");
+if (Directory.Exists(wwwrootCandidate))
 {
-    var p1 = Path.Combine(builder.Environment.ContentRootPath, "wwwroot");
-    var p2 = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "..", "..", "..", "wwwroot"));
-    if (Directory.Exists(p1)) builder.Environment.WebRootPath = p1;
-    else if (Directory.Exists(p2)) builder.Environment.WebRootPath = p2;
+    builder.Environment.WebRootPath = wwwrootCandidate;
+}
+else if (!string.IsNullOrEmpty(builder.Environment.WebRootPath) && Directory.Exists(builder.Environment.WebRootPath))
+{
+    // Đã có WebRootPath hợp lệ
+}
+else
+{
+    var fallback = Path.Combine(AppContext.BaseDirectory, "wwwroot");
+    if (Directory.Exists(fallback)) builder.Environment.WebRootPath = fallback;
 }
 
 // DbContext
 builder.Services.AddDbContext<AppDbContext>(options => 
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
+
 // Session
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
@@ -81,7 +91,7 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Loi seed data");
+        logger.LogError(ex, "Lỗi seed data");
     }
 }
 

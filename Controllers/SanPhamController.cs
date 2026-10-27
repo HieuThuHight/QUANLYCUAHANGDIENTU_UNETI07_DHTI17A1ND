@@ -112,14 +112,22 @@ namespace QuanLyCuaHangDienTu.Controllers
                 ModelState.AddModelError("SoLuongTon", "Số lượng tồn kho không được nhỏ hơn 0.");
             }
 
+            // 4. Xử lý ảnh tải lên
             if (fileAnh != null && fileAnh.Length > 0)
             {
-                try { sp.HinhAnh = await SaveImage(fileAnh); }
+                try 
+                { 
+                    sp.HinhAnh = await SaveImage(fileAnh); 
+                }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Lỗi upload ảnh");
-                    ModelState.AddModelError("HinhAnh", "Không thể upload ảnh: " + ex.Message);
+                    ModelState.AddModelError("HinhAnh", "Lỗi tải ảnh: " + ex.Message);
                 }
+            }
+            else if (string.IsNullOrWhiteSpace(sp.HinhAnh))
+            {
+                sp.HinhAnh = "/images/no-image.png";
             }
 
             if (!ModelState.IsValid) 
@@ -138,7 +146,7 @@ namespace QuanLyCuaHangDienTu.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi thêm sản phẩm");
-                ModelState.AddModelError("", "Có lỗi xảy ra khi lưu sản phẩm. Vui lòng thử lại!");
+                ModelState.AddModelError("", "Có lỗi xảy ra khi lưu sản phẩm: " + ex.Message);
                 await LoadDropdowns(sp.MaLoai);
                 return View(sp);
             }
@@ -181,6 +189,7 @@ namespace QuanLyCuaHangDienTu.Controllers
                 ModelState.AddModelError("SoLuongTon", "Số lượng tồn kho không được nhỏ hơn 0.");
             }
 
+            // 4. Xử lý ảnh cập nhật
             if (fileAnh != null && fileAnh.Length > 0)
             {
                 try
@@ -192,8 +201,12 @@ namespace QuanLyCuaHangDienTu.Controllers
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Lỗi upload ảnh");
-                    ModelState.AddModelError("HinhAnh", "Không thể upload ảnh: " + ex.Message);
+                    ModelState.AddModelError("HinhAnh", "Lỗi tải ảnh: " + ex.Message);
                 }
+            }
+            else if (string.IsNullOrWhiteSpace(sp.HinhAnh))
+            {
+                sp.HinhAnh = "/images/no-image.png";
             }
 
             if (!ModelState.IsValid) 
@@ -212,7 +225,7 @@ namespace QuanLyCuaHangDienTu.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi cập nhật sản phẩm #{MaSanPham}", id);
-                ModelState.AddModelError("", "Có lỗi xảy ra khi cập nhật. Vui lòng thử lại!");
+                ModelState.AddModelError("", "Có lỗi xảy ra khi cập nhật: " + ex.Message);
                 await LoadDropdowns(sp.MaLoai);
                 return View(sp);
             }
@@ -225,21 +238,21 @@ namespace QuanLyCuaHangDienTu.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             var sp = await _context.SanPhams.Include(s => s.ChiTietDonHangs).FirstOrDefaultAsync(s => s.MaSanPham == id);
-            if (sp == null) return Json(new { success = false, message = "Không tìm thấy." });
+            if (sp == null) return Json(new { success = false, message = "Không tìm thấy sản phẩm." });
             if (sp.ChiTietDonHangs.Any())
-                return Json(new { success = false, message = "Không thể xóa vì đã có trong đơn hàng." });
+                return Json(new { success = false, message = "Không thể xóa vì sản phẩm đã có trong đơn hàng." });
 
             try
             {
                 DeleteOldImage(sp.HinhAnh);
                 _context.SanPhams.Remove(sp);
                 await _context.SaveChangesAsync();
-                return Json(new { success = true, message = "Xóa thành công!" });
+                return Json(new { success = true, message = "Xóa sản phẩm thành công!" });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Lỗi xóa sản phẩm #{MaSanPham}", id);
-                return Json(new { success = false, message = "Có lỗi xảy ra." });
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
             }
         }
 
@@ -253,19 +266,60 @@ namespace QuanLyCuaHangDienTu.Controllers
 
         private async Task<string> SaveImage(IFormFile file)
         {
-            var allowed = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+            var allowed = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp", ".jfif", ".bmp", ".avif", ".svg" };
             var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
-            if (!allowed.Contains(ext)) throw new Exception("Chỉ chấp nhận JPG, PNG, GIF, WEBP.");
-            if (file.Length > 5 * 1024 * 1024) throw new Exception("File không quá 5MB.");
+            if (!allowed.Contains(ext))
+                throw new Exception("Chỉ chấp nhận các định dạng ảnh: JPG, JPEG, PNG, GIF, WEBP, JFIF, BMP, AVIF, SVG.");
 
-            var folder = Path.Combine(_env.WebRootPath, "images", "products");
-            if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
+            if (file.Length > 15 * 1024 * 1024)
+                throw new Exception("Dung lượng tập tin ảnh không được vượt quá 15MB.");
 
             var fileName = Guid.NewGuid().ToString("N") + ext;
-            var path = Path.Combine(folder, fileName);
+            var subPath = Path.Combine("images", "products", fileName);
 
-            using (var stream = new FileStream(path, FileMode.Create))
-                await file.CopyToAsync(stream);
+            // Tìm tất cả các thư mục wwwroot có thể có để lưu đồng bộ
+            var targetFolders = new List<string>();
+
+            if (!string.IsNullOrEmpty(_env.WebRootPath))
+            {
+                targetFolders.Add(Path.Combine(_env.WebRootPath, "images", "products"));
+            }
+
+            if (!string.IsNullOrEmpty(_env.ContentRootPath))
+            {
+                targetFolders.Add(Path.Combine(_env.ContentRootPath, "wwwroot", "images", "products"));
+            }
+
+            var baseFolder = Path.Combine(AppContext.BaseDirectory, "wwwroot", "images", "products");
+            targetFolders.Add(baseFolder);
+
+            var projFolder = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "wwwroot", "images", "products"));
+            targetFolders.Add(projFolder);
+
+            bool savedAny = false;
+            foreach (var folder in targetFolders.Distinct())
+            {
+                try
+                {
+                    if (!Directory.Exists(folder))
+                    {
+                        Directory.CreateDirectory(folder);
+                    }
+                    var filePath = Path.Combine(folder, fileName);
+                    using var stream = new FileStream(filePath, FileMode.Create);
+                    await file.CopyToAsync(stream);
+                    savedAny = true;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Không thể lưu ảnh vào thư mục: {Folder}", folder);
+                }
+            }
+
+            if (!savedAny)
+            {
+                throw new Exception("Không thể lưu tập tin ảnh vào máy chủ. Vui lòng kiểm tra quyền ghi thư mục.");
+            }
 
             return "/images/products/" + fileName;
         }
@@ -274,12 +328,22 @@ namespace QuanLyCuaHangDienTu.Controllers
         {
             if (string.IsNullOrEmpty(imagePath)) return;
             if (!imagePath.StartsWith("/images/products/")) return;
-            try
+
+            var fileName = Path.GetFileName(imagePath);
+            var targets = new List<string>();
+            if (!string.IsNullOrEmpty(_env.WebRootPath)) targets.Add(Path.Combine(_env.WebRootPath, "images", "products", fileName));
+            if (!string.IsNullOrEmpty(_env.ContentRootPath)) targets.Add(Path.Combine(_env.ContentRootPath, "wwwroot", "images", "products", fileName));
+            targets.Add(Path.Combine(AppContext.BaseDirectory, "wwwroot", "images", "products", fileName));
+            targets.Add(Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "wwwroot", "images", "products", fileName)));
+
+            foreach (var fullPath in targets.Distinct())
             {
-                var fullPath = Path.Combine(_env.WebRootPath, imagePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
-                if (System.IO.File.Exists(fullPath)) System.IO.File.Delete(fullPath);
+                try
+                {
+                    if (System.IO.File.Exists(fullPath)) System.IO.File.Delete(fullPath);
+                }
+                catch { /* ignore */ }
             }
-            catch (Exception ex) { _logger.LogWarning(ex, "Không xóa được ảnh cũ: {Path}", imagePath); }
         }
     }
 }

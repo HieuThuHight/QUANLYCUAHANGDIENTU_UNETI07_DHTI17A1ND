@@ -47,7 +47,7 @@
     <form asp-action="Edit" method="post" enctype="multipart/form-data" id="formEditProduct">
         @Html.AntiForgeryToken()
         <input type="hidden" asp-for="MaSanPham" />
-        <input type="hidden" asp-for="HinhAnh" />
+        <input type="hidden" asp-for="HinhAnh" id="hinhAnhHidden" />
 
         <div class="row g-4">
             <!-- Cột trái: Thông tin cơ bản & Giá -->
@@ -172,14 +172,29 @@
                     </div>
                     <div class="card-body p-4 text-center">
                         <div class="border rounded-3 p-3 bg-light mb-3 d-flex align-items-center justify-content-center" style="min-height: 220px;">
-                            <img id="imagePreview" src="@(Model.HinhAnh ?? "/images/no-image.png")" alt="Ảnh sản phẩm" 
+                            <img id="imagePreview" src="@(string.IsNullOrEmpty(Model.HinhAnh) ? "/images/no-image.png" : Model.HinhAnh)" alt="Ảnh sản phẩm" 
                                  class="img-fluid rounded" style="max-height: 200px; object-fit: contain;" />
                         </div>
-                        <div class="text-start mb-2">
-                            <label class="form-label fw-semibold small">Chọn ảnh mới (bỏ trống nếu giữ nguyên):</label>
+
+                        <div class="text-start mb-3">
+                            <label class="form-label fw-semibold small">
+                                <i class="bi bi-upload text-primary me-1"></i> Cách 1: Tải ảnh mới từ máy tính:
+                            </label>
                             <input type="file" name="fileAnh" id="fileAnhInput" class="form-control" accept="image/*" />
                         </div>
-                        <small class="text-muted d-block text-start">Dung lượng tối đa 5MB. Ảnh mới sẽ thay thế ảnh cũ.</small>
+
+                        <div class="text-start mb-2">
+                            <label class="form-label fw-semibold small">
+                                <i class="bi bi-link-45deg text-success me-1"></i> Cách 2: Hoặc dán liên kết URL ảnh:
+                            </label>
+                            <input type="text" id="urlAnhInput" class="form-control form-control-sm" 
+                                   placeholder="https://... hoặc /images/products/..." value="@Model.HinhAnh" />
+                        </div>
+
+                        <span asp-validation-for="HinhAnh" class="text-danger small fw-semibold d-block text-start mb-2"></span>
+                        <small class="text-muted d-block text-start">
+                            Bỏ trống nếu muốn giữ nguyên ảnh hiện tại. Hỗ trợ JPG, PNG, WEBP, JFIF tối đa 15MB.
+                        </small>
                     </div>
                 </div>
 
@@ -217,15 +232,35 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-        // Preview ảnh khi chọn file
-        document.getElementById('fileAnhInput')?.addEventListener('change', function (e) {
-            const file = e.target.files[0];
+        // Preview ảnh khi chọn file hoặc nhập URL
+        const fileInput = document.getElementById('fileAnhInput');
+        const urlInput = document.getElementById('urlAnhInput');
+        const preview = document.getElementById('imagePreview');
+        const hiddenInput = document.getElementById('hinhAnhHidden');
+
+        fileInput?.addEventListener('change', function (e) {
+            const file = e.target.files && e.target.files[0];
             if (file) {
+                if (file.size > 15 * 1024 * 1024) {
+                    alert('Tập tin ảnh vượt quá dung lượng tối đa 15MB. Vui lòng chọn ảnh nhẹ hơn!');
+                    fileInput.value = '';
+                    return;
+                }
                 const reader = new FileReader();
                 reader.onload = function (evt) {
-                    document.getElementById('imagePreview').src = evt.target.result;
+                    if (preview) preview.src = evt.target.result;
                 };
                 reader.readAsDataURL(file);
+                if (urlInput) urlInput.value = '';
+            }
+        });
+
+        urlInput?.addEventListener('input', function () {
+            const val = urlInput.value.trim();
+            if (val) {
+                if (preview) preview.src = val;
+                if (hiddenInput) hiddenInput.value = val;
+                if (fileInput) fileInput.value = '';
             }
         });
 

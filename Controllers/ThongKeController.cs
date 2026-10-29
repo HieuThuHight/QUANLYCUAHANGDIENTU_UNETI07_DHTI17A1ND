@@ -1,6 +1,11 @@
-﻿// Họ và tên: Phạm Thái Hoàng
-// Mã sinh viên: 23203100039
-// Nội dung thực hiện: Dashboard, thong ke
+// ============================================================================
+// HỌ VÀ TÊN: Phạm Thái Hoàng
+// MÃ SINH VIÊN: 23203100039
+// LỚP: DHTI17A1ND
+// EMAIL: pthoang.dhti17a1nd@sv.uneti.edu.vn
+// PHÂN HỆ: MODULE 4 - QUẢN LÝ ĐƠN HÀNG, VÒNG ĐỜI TRẠNG THÁI & DASHBOARD THỐNG KÊ
+// NỘI DUNG: Dashboard thống kê tổng quan KPI, doanh thu theo tháng/ngày, trực quan hóa biểu đồ Chart.js
+// ============================================================================
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

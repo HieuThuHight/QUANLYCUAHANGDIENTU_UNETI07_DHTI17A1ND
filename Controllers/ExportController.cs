@@ -1,6 +1,11 @@
-﻿// Họ và tên: Lưu Đức Huy
-// Mã sinh viên: 23274800002
-// Nội dung thực hiện: Xuat Excel va PDF
+// ============================================================================
+// HỌ VÀ TÊN: Lưu Đức Huy
+// MÃ SINH VIÊN: 23274800002
+// LỚP: DHTI17A2ND
+// EMAIL: ldhuy.dhti17a2nd@sv.uneti.edu.vn
+// PHÂN HỆ: MODULE 2 - SẢN PHẨM, VOUCHER, HOÀN HÀNG & BÁO CÁO EXCEL/PDF
+// NỘI DUNG: Xuất dữ liệu danh sách sản phẩm và tồn kho ra tệp tin Excel ClosedXML
+// ============================================================================
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

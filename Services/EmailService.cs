@@ -1,3 +1,14 @@
+// ============================================================================
+// DỰ ÁN: QUẢN LÝ CỬA HÀNG ĐIỆN TỬ - UNETI (NHÓM 07 - DHTI17A1ND)
+// PHÂN HỆ: PHẦN CHUNG (FOUNDATION & SHARED INFRASTRUCTURE)
+// NHÓM SINH VIÊN THỰC HIỆN:
+//   1. Đỗ Văn Hiếu    - 23203100018 - DHTI17A1ND - dvhieu.dhti17a1nd@sv.uneti.edu.vn (Trưởng nhóm)
+//   2. Lưu Đức Huy    - 23274800002 - DHTI17A2ND - ldhuy.dhti17a2nd@sv.uneti.edu.vn
+//   3. Vương Quang Đạt - 23203100036 - DHTI17A1ND - vqdat.dhti17a1nd@sv.uneti.edu.vn
+//   4. Phạm Thái Hoàng - 23203100039 - DHTI17A1ND - pthoang.dhti17a1nd@sv.uneti.edu.vn
+// NỘI DUNG: Dịch vụ gửi email xác nhận đặt hàng, thông báo trạng thái và mã token đặt lại mật khẩu
+// ============================================================================
+
 using QuanLyCuaHangDienTu.Helpers;
 ﻿// Họ và tên: Lưu Đức Huy
 // Mã sinh viên: 23274800002

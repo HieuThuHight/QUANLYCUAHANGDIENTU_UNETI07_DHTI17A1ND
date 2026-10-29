@@ -1,6 +1,11 @@
-// Họ và tên: Đỗ Văn Hiếu
-// Mã sinh viên: 23203100018
-// Nội dung thực hiện: Trang chu - redirect theo vai tro
+// ============================================================================
+// HỌ VÀ TÊN: Đỗ Văn Hiếu
+// MÃ SINH VIÊN: 23203100018
+// LỚP: DHTI17A1ND
+// EMAIL: dvhieu.dhti17a1nd@sv.uneti.edu.vn
+// PHÂN HỆ: MODULE 1 - XÁC THỰC, PHÂN QUYỀN, TÀI KHOẢN & LOẠI SẢN PHẨM
+// NỘI DUNG: Trang chủ, điều hướng theo vai trò và danh sách sản phẩm nổi bật
+// ============================================================================
 
 using Microsoft.AspNetCore.Mvc;
 

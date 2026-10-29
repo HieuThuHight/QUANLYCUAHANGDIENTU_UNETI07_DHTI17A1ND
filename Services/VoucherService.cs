@@ -1,6 +1,11 @@
-// Họ và tên: Lưu Đức Huy
-// Mã sinh viên: 23274800002
-// Nội dung thực hiện: Xu ly voucher - Chuc nang nang cao
+// ============================================================================
+// HỌ VÀ TÊN: Lưu Đức Huy
+// MÃ SINH VIÊN: 23274800002
+// LỚP: DHTI17A2ND
+// EMAIL: ldhuy.dhti17a2nd@sv.uneti.edu.vn
+// PHÂN HỆ: MODULE 2 - SẢN PHẨM, VOUCHER, HOÀN HÀNG & BÁO CÁO EXCEL/PDF
+// NỘI DUNG: Xử lý kiểm tra Voucher (.ToUpper, Bỏ mã, tính số tiền thiếu, mức sàn đơn)
+// ============================================================================
 
 using Microsoft.EntityFrameworkCore;
 using QuanLyCuaHangDienTu.Data;

@@ -1,6 +1,11 @@
-// Họ và tên: Vương Quang Đạt
-// Mã sinh viên: 23203100036
-// Nội dung thực hiện: Quan ly khach hang va ho so ca nhan
+// ============================================================================
+// HỌ VÀ TÊN: Vương Quang Đạt
+// MÃ SINH VIÊN: 23203100036
+// LỚP: DHTI17A1ND
+// EMAIL: vqdat.dhti17a1nd@sv.uneti.edu.vn
+// PHÂN HỆ: MODULE 3 - GIỎ HÀNG, ĐẶT HÀNG, THANH TOÁN VIETQR/COD & KHÁCH HÀNG
+// NỘI DUNG: Quản lý danh sách khách hàng, cập nhật hồ sơ và khóa/mở khóa tài khoản khách
+// ============================================================================
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

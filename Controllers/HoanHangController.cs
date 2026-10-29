@@ -1,6 +1,11 @@
-﻿// Họ và tên: Lưu Đức Huy
-// Mã sinh viên: 23274800002
-// Nội dung thực hiện: Xu ly yeu cau hoan hang
+// ============================================================================
+// HỌ VÀ TÊN: Lưu Đức Huy
+// MÃ SINH VIÊN: 23274800002
+// LỚP: DHTI17A2ND
+// EMAIL: ldhuy.dhti17a2nd@sv.uneti.edu.vn
+// PHÂN HỆ: MODULE 2 - SẢN PHẨM, VOUCHER, HOÀN HÀNG & BÁO CÁO EXCEL/PDF
+// NỘI DUNG: Tiếp nhận yêu cầu hoàn hàng từ khách, kiểm duyệt và cập nhật trạng thái đổi trả
+// ============================================================================
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

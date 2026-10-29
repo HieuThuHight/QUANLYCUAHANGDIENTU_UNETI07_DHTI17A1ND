@@ -1,6 +1,11 @@
-﻿// Họ và tên: Đỗ Văn Hiếu
-// Mã sinh viên: 23203100018
-// Nội dung thực hiện: Seed du lieu mau
+// ============================================================================
+// HỌ VÀ TÊN: Vương Quang Đạt
+// MÃ SINH VIÊN: 23203100036
+// LỚP: DHTI17A1ND
+// EMAIL: vqdat.dhti17a1nd@sv.uneti.edu.vn
+// PHÂN HỆ: MODULE 3 - GIỎ HÀNG, ĐẶT HÀNG, THANH TOÁN VIETQR/COD & KHÁCH HÀNG
+// NỘI DUNG: Khởi tạo dữ liệu mẫu tài khoản, danh mục, sản phẩm kèm 2 sản phẩm 5k-10k test VietQR thực tế
+// ============================================================================
 
 using Microsoft.EntityFrameworkCore;
 using QuanLyCuaHangDienTu.Helpers;

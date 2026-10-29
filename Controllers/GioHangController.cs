@@ -1,6 +1,11 @@
-﻿// Họ và tên: Vương Quang Đạt
-// Mã sinh viên: 23203100036
-// Nội dung thực hiện: Gio hang, dat hang - bat buoc dang nhap
+﻿// ============================================================================
+// HỌ VÀ TÊN: Vương Quang Đạt
+// MÃ SINH VIÊN: 23203100036
+// LỚP: DHTI17A1ND
+// EMAIL: vqdat.dhti17a1nd@sv.uneti.edu.vn
+// PHÂN HỆ: MODULE 3 - GIỎ HÀNG, ĐẶT HÀNG, THANH TOÁN VIETQR/COD & KHÁCH HÀNG
+// NỘI DUNG: Giỏ hàng Session, quy trình đặt hàng 7 bước, trừ tồn kho thời gian thực, tích hợp VietQR Napas247 & COD
+// ============================================================================
 
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
@@ -32,11 +37,39 @@ namespace QuanLyCuaHangDienTu.Controllers
         private List<CartItemViewModel> GetCart()
         {
             var json = HttpContext.Session.GetString(CART_KEY);
+            if (string.IsNullOrEmpty(json))
+            {
+                json = Request.Cookies[CART_KEY];
+                if (!string.IsNullOrEmpty(json))
+                {
+                    try { HttpContext.Session.SetString(CART_KEY, json); } catch { }
+                }
+            }
             return string.IsNullOrEmpty(json) ? new() : JsonSerializer.Deserialize<List<CartItemViewModel>>(json) ?? new();
         }
 
         private void SaveCart(List<CartItemViewModel> cart)
-            => HttpContext.Session.SetString(CART_KEY, JsonSerializer.Serialize(cart));
+        {
+            var json = JsonSerializer.Serialize(cart);
+            HttpContext.Session.SetString(CART_KEY, json);
+            try
+            {
+                Response.Cookies.Append(CART_KEY, json, new CookieOptions
+                {
+                    Expires = DateTimeOffset.Now.AddDays(30),
+                    HttpOnly = true,
+                    IsEssential = true,
+                    SameSite = SameSiteMode.Lax
+                });
+            }
+            catch { }
+        }
+
+        private void ClearCart()
+        {
+            HttpContext.Session.Remove(CART_KEY);
+            try { Response.Cookies.Delete(CART_KEY); } catch { }
+        }
 
         // ===== THÊM VÀO GIỎ - CHỈ KHÁCH ĐÃ ĐĂNG NHẬP =====
         [HttpPost]
@@ -315,7 +348,7 @@ namespace QuanLyCuaHangDienTu.Controllers
                     });
                 }
 
-                HttpContext.Session.Remove(CART_KEY);
+                ClearCart();
                 if (phuongThuc == "COD")
                 {
                     TempData["Success"] = $"Đặt hàng thành công! Mã đơn: #{donHang.MaDonHang}. Phương thức: Tiền mặt khi nhận hàng (COD).";

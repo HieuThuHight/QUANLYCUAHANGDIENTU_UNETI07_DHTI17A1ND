@@ -1,4 +1,4 @@
-@model QuanLyCuaHangDienTu.Models.ViewModels.CheckoutViewModel
+﻿@model QuanLyCuaHangDienTu.Models.ViewModels.CheckoutViewModel
 @{ ViewData["Title"] = "Thanh toán"; Layout = "_Layout"; }
 
 <h2>Thanh toán đơn hàng</h2>
@@ -88,7 +88,7 @@
                                     <div>
                                         @if (duDieuKien)
                                         {
-                                            <button type="button" class="btn btn-sm btn-outline-success py-1 px-2 fw-semibold btn-chon-voucher" data-code="@v.MaCode">
+                                            <button type="button" class="btn btn-sm btn-outline-success py-1 px-2 fw-semibold btn-chon-voucher" onclick="chonVoucher('@v.MaCode')" data-code="@v.MaCode">
                                                 Dùng mã
                                             </button>
                                         }

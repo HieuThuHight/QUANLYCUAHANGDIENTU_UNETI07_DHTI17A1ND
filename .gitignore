@@ -1,4 +1,4 @@
-# Visual Studio
+﻿# Visual Studio
 .vs/
 *.user
 *.suo
@@ -28,10 +28,12 @@ bld/
 *.log
 
 # Local config
-appsettings.Development.json
 appsettings.Local.json
 
 # SQL
 *.mdf
 *.ldf
 *.ndf
+
+# Word reports
+*.docx

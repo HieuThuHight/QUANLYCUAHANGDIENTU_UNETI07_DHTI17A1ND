@@ -1,6 +1,11 @@
-﻿// Họ và tên: Đỗ Văn Hiếu
-// Mã sinh viên: 23203100018
-// Nội dung thực hiện: Phan quyen Admin, KhachHang, BatBuocDangNhap
+// ============================================================================
+// HỌ VÀ TÊN: Đỗ Văn Hiếu
+// MÃ SINH VIÊN: 23203100018
+// LỚP: DHTI17A1ND
+// EMAIL: dvhieu.dhti17a1nd@sv.uneti.edu.vn
+// PHÂN HỆ: MODULE 1 - XÁC THỰC, PHÂN QUYỀN, TÀI KHOẢN & LOẠI SẢN PHẨM
+// NỘI DUNG: ActionFilter kiểm tra phân quyền truy cập Admin, KhachHang và bắt buộc đăng nhập
+// ============================================================================
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;

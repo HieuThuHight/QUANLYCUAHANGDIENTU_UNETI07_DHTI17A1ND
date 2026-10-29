@@ -1,3 +1,12 @@
+// ============================================================================
+// HỌ VÀ TÊN: Vương Quang Đạt
+// MÃ SINH VIÊN: 23203100036
+// LỚP: DHTI17A1ND
+// EMAIL: vqdat.dhti17a1nd@sv.uneti.edu.vn
+// PHÂN HỆ: MODULE 3 - GIỎ HÀNG, ĐẶT HÀNG, THANH TOÁN VIETQR/COD & KHÁCH HÀNG
+// NỘI DUNG: Thuật toán sinh chuỗi thanh toán mã VietQR Napas247 EMVCo TLV + CRC-16 cho ngân hàng Liobank
+// ============================================================================
+
 namespace QuanLyCuaHangDienTu.Helpers
 {
     public static class VietQRHelper

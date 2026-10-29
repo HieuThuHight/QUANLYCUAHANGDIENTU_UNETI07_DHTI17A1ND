@@ -1,3 +1,4 @@
+﻿using Microsoft.AspNetCore.DataProtection;
 // ============================================================================
 // DỰ ÁN: QUẢN LÝ CỬA HÀNG ĐIỆN TỬ - UNETI (NHÓM 07 - DHTI17A1ND)
 // PHÂN HỆ: PHẦN CHUNG (FOUNDATION & SHARED INFRASTRUCTURE)

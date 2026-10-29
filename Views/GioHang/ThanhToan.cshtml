@@ -1,4 +1,4 @@
-﻿@model QuanLyCuaHangDienTu.Models.ViewModels.CheckoutViewModel
+@model QuanLyCuaHangDienTu.Models.ViewModels.CheckoutViewModel
 @{ ViewData["Title"] = "Thanh toán"; Layout = "_Layout"; }
 
 <h2>Thanh toán đơn hàng</h2>
@@ -64,17 +64,19 @@
                 {
                     <div class="card bg-light border p-2 mb-2 shadow-sm rounded">
                         <div class="fw-bold small text-primary mb-2">
-                            <i class="bi bi-gift-fill text-warning me-1"></i> GỢI Ý MÃ GIẢM GIÁ CHO BẠN:
+                            <i class="bi bi-gift-fill text-warning me-1"></i> GỢI Ý MÃ GIẢM GIÁ CHO BẠN (BẤM ĐỂ TỰ ĐỘNG GÁN MÃ):
                         </div>
-                        <div class="d-flex flex-column gap-2" style="max-height: 220px; overflow-y: auto;">
+                        <div class="d-flex flex-column gap-2" style="max-height: 230px; overflow-y: auto;">
                             @foreach (var v in Model.Vouchers)
                             {
                                 var duDieuKien = Model.TongTien >= v.DonHangToiThieu;
-                                <div class="p-2 border rounded bg-white d-flex justify-content-between align-items-center @(!duDieuKien ? "opacity-75" : "")">
+                                <div class="p-2 border rounded bg-white d-flex justify-content-between align-items-center voucher-card-item @(duDieuKien ? "border-success border-opacity-50" : "border-warning border-opacity-50")" 
+                                     style="cursor: pointer; transition: all 0.2s;" 
+                                     onclick="chonVoucher('@v.MaCode', @(duDieuKien ? "true" : "false"), @v.DonHangToiThieu)">
                                     <div>
                                         <div class="fw-bold">
-                                            <span class="badge bg-warning text-dark me-1">@v.MaCode</span>
-                                            <span class="small text-dark">@v.TenVoucher</span>
+                                            <span class="badge @(duDieuKien ? "bg-success" : "bg-warning text-dark") me-1">@v.MaCode</span>
+                                            <span class="small text-dark fw-semibold">@v.TenVoucher</span>
                                         </div>
                                         <div class="small text-muted" style="font-size: 11px;">
                                             @(v.LoaiGiamGia == "PhanTram" ? $"Giảm {v.GiaTriGiam:N0}%" : $"Giảm {v.GiaTriGiam:N0} đ")
@@ -88,14 +90,14 @@
                                     <div>
                                         @if (duDieuKien)
                                         {
-                                            <button type="button" class="btn btn-sm btn-outline-success py-1 px-2 fw-semibold btn-chon-voucher" onclick="chonVoucher('@v.MaCode')" data-code="@v.MaCode">
-                                                Dùng mã
+                                            <button type="button" class="btn btn-sm btn-outline-success py-1 px-2 fw-semibold btn-chon-voucher" onclick="event.stopPropagation(); chonVoucher('@v.MaCode', true, @v.DonHangToiThieu);" data-code="@v.MaCode" title="Bấm để áp dụng ngay">
+                                                <i class="bi bi-check-circle me-1"></i> Dùng mã
                                             </button>
                                         }
                                         else
                                         {
-                                            <button type="button" class="btn btn-sm btn-light py-1 px-2 text-muted" disabled style="font-size: 11px;">
-                                                Chưa đủ
+                                            <button type="button" class="btn btn-sm btn-outline-warning py-1 px-2 fw-semibold btn-chon-voucher" onclick="event.stopPropagation(); chonVoucher('@v.MaCode', false, @v.DonHangToiThieu);" data-code="@v.MaCode" title="Bấm để tự động gán mã vào ô nhập">
+                                                <i class="bi bi-arrow-up-right me-1"></i> Chọn mã
                                             </button>
                                         }
                                     </div>
@@ -140,31 +142,62 @@
         if (btnHuy) btnHuy.classList.add('d-none');
     }
 
+    // Hàm chọn voucher toàn cục: Tự động gán mã vào ô nhập và kích hoạt kiểm tra
+    window.chonVoucher = function (code, duDieuKien, donHangToiThieu) {
+        if (!code) return;
+        const input = document.getElementById('maVoucher');
+        if (input) {
+            input.value = code.trim().toUpperCase();
+            input.focus();
+        }
+
+        const msgEl = document.getElementById('voucherMsg');
+        const btnHuy = document.getElementById('btnHuyVoucher');
+
+        if (duDieuKien === false) {
+            resetVoucherUI();
+            const thieu = (donHangToiThieu || 0) - tongTien;
+            msgEl.innerText = 'Đã chọn mã [' + code + ']. Mã yêu cầu đơn tối thiểu ' + Number(donHangToiThieu || 0).toLocaleString('vi-VN') + ' đ (bạn cần mua thêm ' + (thieu > 0 ? Number(thieu).toLocaleString('vi-VN') : 0) + ' đ để được giảm giá).';
+            msgEl.className = 'text-warning small fw-semibold';
+            if (btnHuy) btnHuy.classList.remove('d-none');
+            return;
+        }
+
+        applyVoucher(code);
+    };
+
     async function applyVoucher(ma) {
         const msgEl = document.getElementById('voucherMsg');
         const btnHuy = document.getElementById('btnHuyVoucher');
+        const input = document.getElementById('maVoucher');
+
         if (!ma || !ma.trim()) {
             msgEl.innerText = 'Vui lòng nhập hoặc chọn mã voucher.';
             msgEl.className = 'text-danger small fw-semibold';
             resetVoucherUI();
             return;
         }
+
+        const cleanCode = ma.trim().toUpperCase();
+        if (input) input.value = cleanCode;
+
         try {
             const res = await fetch('/GioHang/KiemTraVoucher', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ maCode: ma.trim(), tongTien: tongTien })
+                body: JSON.stringify({ maCode: cleanCode, tongTien: tongTien })
             });
             const data = await res.json();
             msgEl.innerText = data.message;
             if (data.success) {
                 msgEl.className = 'text-success small fw-semibold';
-                document.getElementById('giamGia').innerText = '-' + data.giam.toLocaleString('vi-VN') + ' đ';
+                document.getElementById('giamGia').innerText = '-' + Number(data.giam).toLocaleString('vi-VN') + ' đ';
                 document.getElementById('thanhToan').innerText = (tongTien - data.giam).toLocaleString('vi-VN') + ' đ';
                 if (btnHuy) btnHuy.classList.remove('d-none');
             } else {
                 msgEl.className = 'text-danger small fw-semibold';
                 resetVoucherUI();
+                if (btnHuy) btnHuy.classList.remove('d-none');
             }
         } catch (e) {
             msgEl.innerText = 'Lỗi kết nối kiểm tra mã voucher.';
@@ -174,15 +207,18 @@
     }
 
     function clearVoucher() {
-        document.getElementById('maVoucher').value = '';
+        const input = document.getElementById('maVoucher');
+        if (input) input.value = '';
         resetVoucherUI();
         const msgEl = document.getElementById('voucherMsg');
-        msgEl.innerText = 'Đã hủy áp dụng mã voucher.';
-        msgEl.className = 'text-muted small fw-semibold';
+        if (msgEl) {
+            msgEl.innerText = 'Đã hủy áp dụng mã voucher.';
+            msgEl.className = 'text-muted small fw-semibold';
+        }
     }
 
-    document.getElementById('btnApDung').addEventListener('click', () => {
-        const ma = document.getElementById('maVoucher').value;
+    document.getElementById('btnApDung')?.addEventListener('click', () => {
+        const ma = document.getElementById('maVoucher')?.value;
         applyVoucher(ma);
     });
 
@@ -190,14 +226,5 @@
     if (btnHuy) {
         btnHuy.addEventListener('click', clearVoucher);
     }
-
-    // Bắt sự kiện khi click vào nút "Dùng mã" của voucher gợi ý
-    document.querySelectorAll('.btn-chon-voucher').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const code = btn.getAttribute('data-code');
-            document.getElementById('maVoucher').value = code;
-            applyVoucher(code);
-        });
-    });
 </script>
 }

@@ -62,7 +62,7 @@
                                 </label>
                                 <input asp-for="TenSanPham" class="form-control form-control-lg @(ViewData.ModelState["TenSanPham"]?.Errors.Any() == true ? "is-invalid" : "")" 
                                        placeholder="Ví dụ: iPhone 15 Pro Max 256GB Titan Tự Nhiên..." id="tenSanPhamInput" />
-                                <span asp-validation-for="TenSanPham" class="invalid-feedback fw-semibold d-block"></span>
+                                <span asp-validation-for="TenSanPham" class="text-danger small fw-semibold d-block mt-1"></span>
                                 <small class="text-muted">Tên sản phẩm phải là duy nhất, không được trùng với sản phẩm đã có.</small>
                             </div>
 
@@ -71,10 +71,10 @@
                                 <label asp-for="MaLoai" class="form-label fw-semibold">
                                     Loại sản phẩm <span class="text-danger">*</span>
                                 </label>
-                                <select asp-for="MaLoai" class="form-select @(ViewData.ModelState["MaLoai"]?.Errors.Any() == true ? "is-invalid" : "")" asp-items="ViewBag.LoaiSanPhams">
+                                <select asp-for="MaLoai" id="maLoaiSelect" class="form-select @(ViewData.ModelState["MaLoai"]?.Errors.Any() == true ? "is-invalid" : "")" asp-items="ViewBag.LoaiSanPhams">
                                     <option value="">-- Chọn danh mục sản phẩm --</option>
                                 </select>
-                                <span asp-validation-for="MaLoai" class="invalid-feedback fw-semibold d-block"></span>
+                                <span asp-validation-for="MaLoai" class="text-danger small fw-semibold d-block mt-1"></span>
                             </div>
 
                             <!-- Thương hiệu -->
@@ -82,9 +82,9 @@
                                 <label asp-for="ThuongHieu" class="form-label fw-semibold">
                                     Thương hiệu <span class="text-danger">*</span>
                                 </label>
-                                <input asp-for="ThuongHieu" class="form-control @(ViewData.ModelState["ThuongHieu"]?.Errors.Any() == true ? "is-invalid" : "")" 
+                                <input asp-for="ThuongHieu" id="thuongHieuInput" class="form-control @(ViewData.ModelState["ThuongHieu"]?.Errors.Any() == true ? "is-invalid" : "")" 
                                        placeholder="Ví dụ: Apple, Samsung, Sony..." />
-                                <span asp-validation-for="ThuongHieu" class="invalid-feedback fw-semibold d-block"></span>
+                                <span asp-validation-for="ThuongHieu" class="text-danger small fw-semibold d-block mt-1"></span>
                             </div>
 
                             <!-- Xuất xứ -->

@@ -1,6 +1,11 @@
-﻿// Họ và tên: Lưu Đức Huy
-// Mã sinh viên: 23274800002
-// Nội dung thực hiện: Quan ly san pham, tim kiem, loc, sap xep, phan trang, upload anh
+﻿// ============================================================================
+// HỌ VÀ TÊN: Lưu Đức Huy
+// MÃ SINH VIÊN: 23274800002
+// LỚP: DHTI17A2ND
+// EMAIL: ldhuy.dhti17a2nd@sv.uneti.edu.vn
+// PHÂN HỆ: MODULE 2 - SẢN PHẨM, VOUCHER, HOÀN HÀNG & BÁO CÁO EXCEL/PDF
+// NỘI DUNG: CRUD Sản phẩm, bộ lọc đa tiêu chí, upload ảnh đa thư mục wwwroot, báo lỗi trùng tên và đơn giá <= 0
+// ============================================================================
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -92,6 +97,9 @@ namespace QuanLyCuaHangDienTu.Controllers
         [AdminAuthorize]
         public async Task<IActionResult> Create(SanPham sp, IFormFile? fileAnh)
         {
+            ModelState.Remove("LoaiSanPham");
+            ModelState.Remove("ChiTietDonHangs");
+            if (fileAnh != null && fileAnh.Length > 0) { ModelState.Remove("HinhAnh"); }
             // 1. Chuẩn hóa & kiểm tra trùng tên sản phẩm (không phân biệt hoa thường)
             sp.TenSanPham = sp.TenSanPham?.Trim() ?? string.Empty;
             if (!string.IsNullOrEmpty(sp.TenSanPham) &&
@@ -167,6 +175,9 @@ namespace QuanLyCuaHangDienTu.Controllers
         [AdminAuthorize]
         public async Task<IActionResult> Edit(int id, SanPham sp, IFormFile? fileAnh)
         {
+            ModelState.Remove("LoaiSanPham");
+            ModelState.Remove("ChiTietDonHangs");
+            if (fileAnh != null && fileAnh.Length > 0) { ModelState.Remove("HinhAnh"); }
             if (id != sp.MaSanPham) return NotFound();
 
             // 1. Chuẩn hóa & kiểm tra trùng tên sản phẩm với sản phẩm khác (không phân biệt hoa thường)
@@ -275,7 +286,11 @@ namespace QuanLyCuaHangDienTu.Controllers
                 throw new Exception("Dung lượng tập tin ảnh không được vượt quá 15MB.");
 
             var fileName = Guid.NewGuid().ToString("N") + ext;
-            var subPath = Path.Combine("images", "products", fileName);
+
+            // Đọc toàn bộ nội dung file ảnh một lần vào bộ nhớ để ghi an toàn cho nhiều thư mục
+            using var memoryStream = new MemoryStream();
+            await file.CopyToAsync(memoryStream);
+            var fileBytes = memoryStream.ToArray();
 
             // Tìm tất cả các thư mục wwwroot có thể có để lưu đồng bộ
             var targetFolders = new List<string>();
@@ -293,11 +308,15 @@ namespace QuanLyCuaHangDienTu.Controllers
             var baseFolder = Path.Combine(AppContext.BaseDirectory, "wwwroot", "images", "products");
             targetFolders.Add(baseFolder);
 
-            var projFolder = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "wwwroot", "images", "products"));
-            targetFolders.Add(projFolder);
+            try
+            {
+                var projFolder = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "wwwroot", "images", "products"));
+                targetFolders.Add(projFolder);
+            }
+            catch { }
 
             bool savedAny = false;
-            foreach (var folder in targetFolders.Distinct())
+            foreach (var folder in targetFolders.Distinct(StringComparer.OrdinalIgnoreCase))
             {
                 try
                 {
@@ -306,8 +325,7 @@ namespace QuanLyCuaHangDienTu.Controllers
                         Directory.CreateDirectory(folder);
                     }
                     var filePath = Path.Combine(folder, fileName);
-                    using var stream = new FileStream(filePath, FileMode.Create);
-                    await file.CopyToAsync(stream);
+                    await System.IO.File.WriteAllBytesAsync(filePath, fileBytes);
                     savedAny = true;
                 }
                 catch (Exception ex)

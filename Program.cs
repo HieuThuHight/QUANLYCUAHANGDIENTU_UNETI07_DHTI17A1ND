@@ -47,6 +47,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
 
+// Data Protection: Lưu trữ khóa cố định để duy trì phiên Session người dùng không bị mất
+var dpFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "UNETI_DataProtectionKeys");
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(dpFolder))
+    .SetApplicationName("QuanLyCuaHangDienTu");
+
 // Session
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
